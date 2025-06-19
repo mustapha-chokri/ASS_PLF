@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            {% if student %}
+            <a href="{{ url_for('students.view', id=student.id) }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm ml-2">
+                <i class="fas fa-eye fa-sm text-white-50"></i> عرض بيانات التلميذ
+            </a>
+            {% endif %}
+            <a href="{{ url_for('students.transport_subscriptions') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة الاشتراكات
+            </a>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">بيانات الاشتراك</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {{ form.csrf_token }}
+                
+                {% if student %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="font-weight-bold text-primary mb-0">بيانات التلميذ</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>رقم التلميذ:</strong> {{ student.student_id }}</p>
+                                <p class="mb-1"><strong>الاسم الكامل:</strong> {{ student.full_name }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>المستوى الدراسي:</strong> {{ student.educational_level }}</p>
+                                <p class="mb-1"><strong>المؤسسة:</strong> {{ student.institution or 'غير متوفر' }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>اسم ولي الأمر:</strong> {{ student.guardian_name }}</p>
+                                <p class="mb-1"><strong>رقم هاتف ولي الأمر:</strong> {{ student.guardian_phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-group mb-4">
+                    <label for="student_id">التلميذ *</label>
+                    {{ form.student_id(class="form-control") }}
+                    {% if form.student_id.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.student_id.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="font-weight-bold text-primary mb-0">بيانات الدفع</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="month">الشهر *</label>
+                                {{ form.month(class="form-control") }}
+                                {% if form.month.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.month.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="year">السنة *</label>
+                                {{ form.year(class="form-control") }}
+                                {% if form.year.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.year.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="amount">المبلغ (درهم) *</label>
+                                {{ form.amount(class="form-control") }}
+                                {% if form.amount.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.amount.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if student %}
+                                <small class="text-muted">القيمة الافتراضية: {{ student.monthly_fee }} درهم</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="payment_date">تاريخ الدفع *</label>
+                                {{ form.payment_date(class="form-control", type="date") }}
+                                {% if form.payment_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_date.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="payment_method">طريقة الدفع *</label>
+                                {{ form.payment_method(class="form-control") }}
+                                {% if form.payment_method.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_method.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="receipt_number">رقم الإيصال</label>
+                                {{ form.receipt_number(class="form-control") }}
+                                {% if form.receipt_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.receipt_number.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="notes">ملاحظات</label>
+                                {{ form.notes(class="form-control", rows=3) }}
+                                {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-save"></i> حفظ الاشتراك
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

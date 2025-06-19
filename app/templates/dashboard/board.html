@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-primary">مكتب الجمعية</h2>
+        {% if current_user.is_admin %}
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                <i class="fas fa-plus"></i> إضافة عضو
+            </button>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-import"></i> استيراد أعضاء
+            </button>
+            <a href="{{ url_for('dashboard.download_board_template') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i> تحميل القالب
+            </a>
+            <a href="{{ url_for('dashboard.export_board') }}" class="btn btn-outline-primary">
+                <i class="fas fa-file-export"></i> تصدير الأعضاء
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- إحصائيات سريعة -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4>{{ members|length }}</h4>
+                    <p class="mb-0">إجمالي الأعضاء</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>{{ president_count }}</h4>
+                    <p class="mb-0">الرؤساء</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4>{{ members|selectattr('position', 'equalto', 'نائب الرئيس')|list|length }}</h4>
+                    <p class="mb-0">نواب الرئيس</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4>{{ treasurer_count }}</h4>
+                    <p class="mb-0">أمناء المال</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for member in members %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        {% if member.image %}
+                        <img src="/{{ member.image }}" alt="صورة العضو" class="rounded-circle border" style="width: 90px; height: 90px; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title">{{ member.first_name }} {{ member.last_name }}</h5>
+                    <p class="text-primary fw-bold fs-5 mb-1">{{ member.position }}</p>
+                    <p class="mb-1"><small>فترة الانتداب: {{ member.mandate.title if member.mandate else (member.mandate_period or '-') }}</small></p>
+                    <p class="mb-1"><small>تاريخ الانخراط: {{ member.join_date or '-' }}</small></p>
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <a href="{{ url_for('dashboard.view_board_member', member_id=member.id) }}" class="btn btn-outline-info btn-sm" title="معاينة"><i class="fas fa-eye"></i></a>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('dashboard.edit_board_member', member_id=member.id) }}" class="btn btn-outline-warning btn-sm" title="تعديل"><i class="fas fa-edit"></i></a>
+                        <form method="POST" action="{{ url_for('dashboard.delete_board_member', member_id=member.id) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا العضو؟');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="حذف"><i class="fas fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary btn-sm" onclick="printCard('card-{{ member.id }}')" title="طباعة البطاقة"><i class="fas fa-print"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Modal إضافة عضو جديد -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMemberModalLabel">إضافة عضو جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.first_name.label(class="form-label") }}
+                                {{ form.first_name(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.last_name.label(class="form-label") }}
+                                {{ form.last_name(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.position.label(class="form-label") }}
+                                {{ form.position(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.mandate_id.label(class="form-label") }}
+                                {{ form.mandate_id(class="form-select") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.join_date.label(class="form-label") }}
+                                {{ form.join_date(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.image.label(class="form-label") }}
+                                {{ form.image(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.nationality.label(class="form-label") }}
+                                {{ form.nationality(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.family_status.label(class="form-label") }}
+                                {{ form.family_status(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.father_name.label(class="form-label") }}
+                                {{ form.father_name(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.mother_name.label(class="form-label") }}
+                                {{ form.mother_name(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.national_id.label(class="form-label") }}
+                                {{ form.national_id(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.address.label(class="form-label") }}
+                                {{ form.address(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.job.label(class="form-label") }}
+                                {{ form.job(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.birth_place.label(class="form-label") }}
+                                {{ form.birth_place(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.birth_date.label(class="form-label") }}
+                                {{ form.birth_date(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.card_data.label(class="form-label") }}
+                                {{ form.card_data(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal استيراد أعضاء -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">استيراد أعضاء المكتب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        {{ form.hidden_tag() }}
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> تعليمات الاستيراد:</h6>
+                            <ul class="mb-0">
+                                <li>قم بتحميل القالب أولاً واملأ البيانات</li>
+                                <li>التواريخ يجب أن تكون بالتنسيق: YYYY-MM-DD</li>
+                                <li>الحقول المطلوبة: الاسم الشخصي، الاسم العائلي، الصفة</li>
+                                <li>يدعم ملفات Excel (.xlsx) و CSV</li>
+                            </ul>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.import_file.label(class="form-label") }}
+                            {{ form.import_file(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{{ url_for('dashboard.download_board_template') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-download"></i> تحميل القالب
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-success" name="import_submit" value="1">
+                            <i class="fas fa-file-import"></i> استيراد
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function printCard(cardId) {
+    // يمكنك تحسين هذه الدالة لطباعة البطاقة فقط
+    window.print();
+}
+
+// إضافة تأكيد قبل الاستيراد
+document.addEventListener('DOMContentLoaded', function() {
+    const importForm = document.querySelector('#importModal form');
+    if (importForm) {
+        importForm.addEventListener('submit', function(e) {
+            const fileInput = this.querySelector('input[type="file"]');
+            if (fileInput && fileInput.files.length > 0) {
+                if (!confirm('هل أنت متأكد من استيراد البيانات؟ سيتم إضافة جميع الأعضاء الجدد إلى قاعدة البيانات.')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

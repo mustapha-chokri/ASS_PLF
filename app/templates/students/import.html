@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.download_template') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm ml-2">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> تنزيل نموذج اكسيل
+            </a>
+            <a href="{{ url_for('students.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة التلاميذ
+            </a>
+        </div>
+    </div>
+
+    <!-- Import Instructions -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">تعليمات الاستيراد</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">طريقة استيراد التلاميذ من ملف اكسيل</h5>
+                <hr>
+                <ol class="mb-0">
+                    <li>قم بتنزيل نموذج ملف الاكسيل الجاهز بالضغط على زر "تنزيل نموذج اكسيل"</li>
+                    <li>املأ النموذج بالبيانات المطلوبة، مع مراعاة الحقول الإلزامية</li>
+                    <li>رقم التلميذ ورقم مسار يجب أن لا يتكررا في قاعدة البيانات</li>
+                    <li>حقل الجنس يجب أن يكون إما "ذكر" أو "أنثى"</li>
+                    <li>المستوى الدراسي يجب أن يكون من القائمة المعتمدة (راجع ورقة التعليمات في النموذج)</li>
+                    <li>قم بحفظ الملف بصيغة اكسيل (.xlsx أو .xls)</li>
+                    <li>قم برفع الملف باستخدام النموذج أدناه</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">رفع ملف اكسيل</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {{ form.csrf_token }}
+                
+                <div class="form-group">
+                    <label for="excel_file">ملف اكسيل *</label>
+                    {{ form.excel_file(class="form-control") }}
+                    {% if form.excel_file.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.excel_file.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="text-muted">الصيغ المقبولة: XLSX, XLS</small>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-upload"></i> استيراد
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

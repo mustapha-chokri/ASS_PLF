@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">حذف سيارة</h6>
+        </div>
+        <div class="card-body">
+            <p>هل أنت متأكد من حذف السيارة {{ vehicle.registration_number }}؟</p>
+            <form action="{{ url_for('vehicles.delete_vehicle', id=vehicle.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger">حذف</button>
+                <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary">إلغاء</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

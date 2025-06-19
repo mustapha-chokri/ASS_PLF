@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إيصال اشتراك - {{ subscription.receipt_number }}</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Nunito', sans-serif;
+            padding: 20px;
+        }
+        .receipt-container {
+            width: 210mm; /* A4 width */
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border: 1px solid #ddd;
+            page-break-inside: avoid;
+            padding: 20px;
+        }
+        .receipt-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4e73df;
+            margin-bottom: 20px;
+        }
+        .receipt-header h2 {
+            font-weight: bold;
+            color: #4e73df;
+        }
+        .receipt-body {
+            padding: 20px 0;
+        }
+        .receipt-info {
+            margin-bottom: 30px;
+        }
+        .receipt-info p {
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+        .receipt-info .label {
+            font-weight: bold;
+            color: #5a5c69;
+            width: 150px;
+            display: inline-block;
+        }
+        .receipt-amount {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #4e73df;
+            padding: 10px;
+            border: 2px dashed #4e73df;
+            border-radius: 10px;
+        }
+        .receipt-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px dashed #e3e6f0;
+        }
+        .signature {
+            width: 200px;
+            text-align: center;
+        }
+        .signature p {
+            border-top: 1px solid #333;
+            padding-top: 5px;
+            margin-top: 50px;
+        }
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+            }
+            .receipt-container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="text-center mb-3 print-btn">
+        <button onclick="window.print()" class="btn btn-primary">طباعة الإيصال</button>
+        <button onclick="window.close()" class="btn btn-secondary">إغلاق</button>
+    </div>
+
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h2>جمعية تلحاج بوبكر</h2>
+            <p>إيصال اشتراك</p>
+            <h5>رقم: {{ subscription.receipt_number or 'بدون رقم' }}</h5>
+        </div>
+        <div class="receipt-body">
+            <div class="receipt-info">
+                <p><span class="label">المنخرط:</span> {{ subscription.member.full_name }}</p>
+                <p><span class="label">رقم الانخراط:</span> {{ subscription.member.registration_number }}</p>
+                <p><span class="label">سنة الاشتراك:</span> {{ subscription.year }}</p>
+                <p><span class="label">تاريخ الدفع:</span> {{ subscription.payment_date.strftime('%d-%m-%Y') }}</p>
+                <p><span class="label">طريقة الدفع:</span> 
+                    {% if subscription.payment_method == 'cash' %}
+                    نقداً
+                    {% elif subscription.payment_method == 'bank_transfer' %}
+                    تحويل بنكي
+                    {% elif subscription.payment_method == 'check' %}
+                    شيك
+                    {% else %}
+                    طريقة أخرى
+                    {% endif %}
+                </p>
+                {% if subscription.notes %}
+                <p><span class="label">ملاحظات:</span> {{ subscription.notes }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="receipt-amount">
+                المبلغ: {{ subscription.amount }} دم
+            </div>
+        </div>
+        <div class="receipt-footer">
+            <div class="signature">
+                <p>توقيع المحاسب</p>
+            </div>
+            <div class="signature">
+                <p>توقيع رئيس الجمعية</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto print on page load
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html> 

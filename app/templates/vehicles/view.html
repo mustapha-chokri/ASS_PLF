@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}معاينة السيارة - {{ vehicle.registration_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">تفاصيل السيارة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>المعلومات الأساسية</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>رقم التسجيل</th>
+                                    <td>{{ vehicle.registration_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع المركبة</th>
+                                    <td>{{ vehicle.vehicle_type }}</td>
+                                </tr>
+                                <tr>
+                                    <th>العلامة التجارية</th>
+                                    <td>{{ vehicle.brand }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الموديل</th>
+                                    <td>{{ vehicle.model }}</td>
+                                </tr>
+                                <tr>
+                                    <th>سنة الصنع</th>
+                                    <td>{{ vehicle.year }}</td>
+                                </tr>
+                                <tr>
+                                    <th>السعة</th>
+                                    <td>{{ vehicle.capacity }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الحالة</th>
+                                    <td>
+                                        <span class="badge bg-{{ vehicle.status_color }}">
+                                            {{ vehicle.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>معلومات الشراء</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>سعر الشراء</th>
+                                    <td>{{ vehicle.purchase_price }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ الشراء</th>
+                                    <td>{{ vehicle.purchase_date.strftime('%Y-%m-%d') if vehicle.purchase_date else '-' }}</td>
+                                </tr>
+                            </table>
+
+                            <h5 class="mt-4">تواريخ الانتهاء</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>تاريخ انتهاء التسجيل</th>
+                                    <td>{{ vehicle.registration_expiry.strftime('%Y-%m-%d') if vehicle.registration_expiry else '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ انتهاء التأمين</th>
+                                    <td>{{ vehicle.insurance_expiry.strftime('%Y-%m-%d') if vehicle.insurance_expiry else '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ انتهاء الفحص</th>
+                                    <td>{{ vehicle.inspection_expiry.strftime('%Y-%m-%d') if vehicle.inspection_expiry else '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ انتهاء رخصة القيادة</th>
+                                    <td>{{ vehicle.driving_license_expiry.strftime('%Y-%m-%d') if vehicle.driving_license_expiry else '-' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>معلومات الصيانة</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>المسافة المقطوعة</th>
+                                    <td>{{ vehicle.current_mileage }}</td>
+                                </tr>
+                                <tr>
+                                    <th>المسافة للصيانة القادمة</th>
+                                    <td>{{ vehicle.next_maintenance_mileage }}</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع الصيانة القادمة</th>
+                                    <td>{{ vehicle.next_maintenance_type }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>ملاحظات</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ vehicle.notes or 'لا توجد ملاحظات' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('vehicles.edit', id=vehicle.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> عودة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

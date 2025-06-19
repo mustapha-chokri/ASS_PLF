@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block additional_styles %}
+<style>
+@media print {
+    /* إخفاء العناصر غير المطلوبة */
+    .filter-section, .action-buttons, .no-print, .modal, .btn {
+        display: none !important;
+    }
+    
+    /* تنسيق الجدول */
+    .table-responsive {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+    
+    .table {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+        border-collapse: collapse !important;
+    }
+    
+    .table th, .table td {
+        padding: 0.5rem !important;
+        border: 1px solid #000 !important;
+        text-align: right !important;
+    }
+    
+    /* تنسيق العنوان والمجموع */
+    .card {
+        border: none !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 0 !important;
+    }
+    
+    /* تنسيق الرسم البياني */
+    .chart-container {
+        page-break-before: always;
+        margin-top: 2rem !important;
+    }
+    
+    /* إظهار جميع الصفوف */
+    .table tbody tr {
+        display: table-row !important;
+    }
+    
+    /* تنسيق النص */
+    body {
+        font-size: 12pt !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* إزالة الخلفيات */
+    * {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>المصاريف</h2>
+        </div>
+        <div class="col-md-6 text-left no-print">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addExpenseModal">
+                إضافة مصروف جديد
+            </button>
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#exportExpenseModal">
+                تصدير إلى Excel
+            </button>
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#importExpenseModal">
+                استيراد من Excel
+            </button>
+            <button type="button" class="btn btn-secondary" id="printButton">
+                طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- بطاقة المجموع -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">المجموع</h5>
+            <h3 class="text-danger">{{ total_amount }} دم</h3>
+        </div>
+    </div>
+
+    <!-- نموذج التصفية -->
+    <div class="card mb-4 filter-section">
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ request.args.get('start_date', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ request.args.get('end_date', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>نوع المصروف</label>
+                        <select name="type_id" class="form-control">
+                            <option value="">الكل</option>
+                            {% for type in expense_types %}
+                            <option value="{{ type.id }}" {% if request.args.get('type_id')|int == type.id %}selected{% endif %}>
+                                {{ type.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">تصفية</button>
+                    <a href="{{ url_for('finance.expense') }}" class="btn btn-secondary">إعادة تعيين</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول المصاريف -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>العملية</th>
+                            <th>المبلغ</th>
+                            <th>التاريخ</th>
+                            <th>نوع المصروف</th>
+                            <th>المسؤول</th>
+                            <th>رقم الفاتورة</th>
+                            <th>ملاحظات</th>
+                            <th class="action-buttons">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr id="expense-row-{{ expense.id }}">
+                            <td>{{ expense.operation }}</td>
+                            <td>{{ expense.amount }} دم</td>
+                            <td>{{ expense.expense_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ expense.expense_type.name }}</td>
+                            <td>{{ expense.responsible.full_name }}</td>
+                            <td>{{ expense.invoice_number or '' }}</td>
+                            <td>{{ expense.notes or '' }}</td>
+                            <td class="action-buttons">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="editExpense({{ expense.id }})">
+                                    تعديل
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteExpense({{ expense.id }})">
+                                    حذف
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسم البياني -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">أعلى 5 أنواع مصروفات</h5>
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إضافة مصروف -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة مصروف جديد</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="addExpenseForm" action="{{ url_for('finance.add_expense') }}" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>العملية</label>
+                        <input type="text" name="operation" id="operation" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ</label>
+                        <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التاريخ</label>
+                        <input type="date" name="expense_date" id="expense_date" class="form-control" value="{{ today }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع المصروف</label>
+                        <select name="expense_type_id" id="expense_type_id" class="form-control" required>
+                            {% for type in expense_types %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المسؤول</label>
+                        <select name="responsible_id" id="responsible_id" class="form-control" required>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الفاتورة</label>
+                        <input type="text" name="invoice_number" id="invoice_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل مصروف -->
+<div class="modal fade" id="editExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل المصروف</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="editExpenseForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>العملية</label>
+                        <input type="text" name="operation" id="edit_operation" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ</label>
+                        <input type="number" step="0.01" name="amount" id="edit_amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التاريخ</label>
+                        <input type="date" name="expense_date" id="edit_expense_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع المصروف</label>
+                        <select name="expense_type_id" id="edit_expense_type_id" class="form-control" required>
+                            {% for type in expense_types %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المسؤول</label>
+                        <select name="responsible_id" id="edit_responsible_id" class="form-control" required>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الفاتورة</label>
+                        <input type="text" name="invoice_number" id="edit_invoice_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea name="notes" id="edit_notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تصدير -->
+<div class="modal fade" id="exportExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تصدير المصاريف</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="exportExpenseForm" action="{{ url_for('finance.export_expenses') }}" method="GET">
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" name="start_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" name="end_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>نوع المصروف</label>
+                        <select name="type_id" class="form-control">
+                            <option value="">الكل</option>
+                            {% for type in expense_types %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">تصدير</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal استيراد -->
+<div class="modal fade" id="importExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">استيراد المصاريف</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('finance.import_expenses') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>اختر ملف Excel</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        <small class="form-text text-muted">
+                            يجب أن يحتوي الملف على الأعمدة التالية: العملية، المبلغ، التاريخ، نوع المصروف، المسؤول
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <a href="{{ url_for('finance.download_expense_template', csrf_token=csrf_token()) }}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> تحميل قالب المصاريف
+                        </a>
+                    </div>
+                    <button type="submit" class="btn btn-primary">استيراد</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // تهيئة الرسم البياني
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: 'المصروفات حسب النوع',
+                data: {{ chart_data|tojson }},
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // تفعيل زر الطباعة
+    $('#printButton').on('click', function() {
+        window.print();
+    });
+});
+
+// دالة تعديل المصروف
+function editExpense(id) {
+    $.ajax({
+        url: `/finance/expense/${id}`,
+        method: 'GET',
+        dataType: 'json',
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            if (response && response.expense) {
+                const data = response.expense;
+                $('#edit_operation').val(data.operation);
+                $('#edit_amount').val(data.amount);
+                $('#edit_expense_date').val(data.expense_date);
+                $('#edit_expense_type_id').val(data.expense_type_id);
+                $('#edit_responsible_id').val(data.responsible_id);
+                $('#edit_invoice_number').val(data.invoice_number || '');
+                $('#edit_notes').val(data.notes || '');
+                
+                $('#editExpenseForm').attr('action', `/finance/edit_expense/${id}`);
+                $('#editExpenseModal').modal('show');
+            } else {
+                alert('لم يتم العثور على بيانات المصروف');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('حدث خطأ أثناء جلب بيانات المصروف');
+        }
+    });
+}
+
+// دالة حذف المصروف
+function deleteExpense(id) {
+    if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
+        // الحصول على قيمة المبلغ قبل حذف الصف
+        const row = document.getElementById(`expense-row-${id}`);
+        const amountText = row.querySelector('td:nth-child(2)').textContent;
+        const amount = parseFloat(amountText.replace(' دم', ''));
+        
+        fetch(`/finance/delete_expense/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // حذف الصف
+                row.remove();
+                
+                // تحديث المجموع
+                const totalElement = document.querySelector('.text-danger');
+                const currentTotalText = totalElement.textContent;
+                const currentTotal = parseFloat(currentTotalText.replace(' دم', ''));
+                const newTotal = (currentTotal - amount).toFixed(2);
+                totalElement.textContent = `${newTotal} دم`;
+            } else {
+                alert(data.message || 'حدث خطأ أثناء حذف المصروف');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف المصروف');
+        });
+    }
+}
+
+// تفعيل نموذج الاستيراد
+$('#importExpenseForm').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+        url: '/finance/import_expenses',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response && response.success) {
+                location.reload();
+            } else {
+                alert(response.message || 'حدث خطأ أثناء استيراد البيانات');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('حدث خطأ أثناء استيراد البيانات');
+        }
+    });
+});
+
+// تفعيل نموذج التصدير
+$('#exportExpenseForm').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var queryString = new URLSearchParams(formData).toString();
+    window.location.href = `/finance/export_expenses?${queryString}`;
+});
+</script>
+{% endblock %} 

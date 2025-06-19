@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">أنواع المداخيل</h1>
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addIncomeSourceModal">
+            <i class="fas fa-plus"></i> إضافة نوع مدخول جديد
+        </button>
+    </div>
+
+    <!-- جدول أنواع المداخيل -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="incomeSourceTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>الوصف</th>
+                            <th>تاريخ الإنشاء</th>
+                            <th>تاريخ التحديث</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for source in income_sources %}
+                        <tr>
+                            <td>{{ source.name }}</td>
+                            <td>{{ source.description|default('-') }}</td>
+                            <td>{{ source.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ source.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-income-source" data-id="{{ source.id }}" data-name="{{ source.name }}" data-description="{{ source.description }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-income-source" data-id="{{ source.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إضافة نوع مدخول جديد -->
+<div class="modal fade" id="addIncomeSourceModal" tabindex="-1" role="dialog" aria-labelledby="addIncomeSourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIncomeSourceModalLabel">إضافة نوع مدخول جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('finance.add_income_source') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="name">الاسم</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="description">الوصف</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل نوع مدخول -->
+<div class="modal fade" id="editIncomeSourceModal" tabindex="-1" role="dialog" aria-labelledby="editIncomeSourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editIncomeSourceModalLabel">تعديل نوع مدخول</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editIncomeSourceForm" action="" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="edit_name">الاسم</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_description">الوصف</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+
+<script>
+$(document).ready(function() {
+    // تهيئة جدول أنواع المداخيل
+    $('#incomeSourceTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+        }
+    });
+
+    // حذف نوع مدخول
+    $('.delete-income-source').click(function() {
+        if (confirm('هل أنت متأكد من حذف هذا النوع؟')) {
+            var id = $(this).data('id');
+            $.ajax({
+                url: "{{ url_for('finance.delete_income_source', id=0) }}".replace('0', id),
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('حدث خطأ أثناء حذف النوع');
+                    }
+                },
+                error: function() {
+                    alert('حدث خطأ أثناء حذف النوع');
+                }
+            });
+        }
+    });
+
+    // تعديل نوع مدخول
+    $('.edit-income-source').click(function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var description = $(this).data('description');
+        
+        $('#editIncomeSourceForm').attr('action', "{{ url_for('finance.edit_income_source', id=0) }}".replace('0', id));
+        $('#edit_name').val(name);
+        $('#edit_description').val(description);
+        
+        $('#editIncomeSourceModal').modal('show');
+    });
+});
+</script>
+{% endblock %}

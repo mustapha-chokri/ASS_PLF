@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('members.create_application_link') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> إنشاء رابط جديد
+            </a>
+            <a href="{{ url_for('members.applications') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+                <i class="fas fa-list fa-sm text-white-50"></i> كل الطلبات
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">روابط طلبات الانخراط</h6>
+        </div>
+        <div class="card-body">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الاسم</th>
+                            <th>الرابط</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{ app.application_date.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                {% if app.status == 'pending_link' %}
+                                <span class="badge badge-warning">في انتظار الاستخدام</span>
+                                {% elif app.status == 'pending' %}
+                                <span class="badge badge-info">في انتظار الموافقة</span>
+                                {% elif app.status == 'approved' %}
+                                <span class="badge badge-success">تمت الموافقة</span>
+                                {% elif app.status == 'rejected' %}
+                                <span class="badge badge-danger">مرفوض</span>
+                                {% else %}
+                                <span class="badge badge-secondary">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.first_name and app.last_name %}
+                                {{ app.full_name }}
+                                {% else %}
+                                <span class="text-muted">لم يتم التعبئة بعد</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.status == 'pending_link' %}
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control form-control-sm" 
+                                           value="{{ url_for('members.public_application', token=app.application_token, _external=True) }}" 
+                                           readonly id="link_{{ app.id }}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary btn-sm" type="button" 
+                                                onclick="copyLink('link_{{ app.id }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">تم استخدام الرابط</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.status == 'pending_link' %}
+                                <a href="#" class="btn btn-danger btn-sm" 
+                                   onclick="return confirm('هل أنت متأكد من إلغاء هذا الرابط؟');">
+                                    <i class="fas fa-trash"></i> إلغاء
+                                </a>
+                                {% elif app.status == 'pending' %}
+                                <a href="{{ url_for('members.approve_application', id=app.id) }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> موافقة
+                                </a>
+                                <a href="#" class="btn btn-danger btn-sm" 
+                                   onclick="rejectApplication({{ app.id }}); return false;">
+                                    <i class="fas fa-times"></i> رفض
+                                </a>
+                                {% else %}
+                                <span class="text-muted">لا إجراءات متاحة</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">لا توجد روابط منشأة حتى الآن.</p>
+                <a href="{{ url_for('members.create_application_link') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إنشاء رابط جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function copyLink(id) {
+    var linkInput = document.getElementById(id);
+    linkInput.select();
+    document.execCommand("copy");
+    
+    // Show tooltip
+    var button = linkInput.nextElementSibling.querySelector('button');
+    var originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+    
+    setTimeout(function() {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 1000);
+}
+
+function rejectApplication(id) {
+    if (confirm('هل أنت متأكد من رفض هذا الطلب؟')) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('members.reject_application', id=0) }}".replace('0', id);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}استيراد السيارات{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">استيراد السيارات</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.file.label(class="form-label") }}
+                            {{ form.file(class="form-control") }}
+                            {% if form.file.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.file.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h5>تعليمات:</h5>
+                            <p>يجب أن يحتوي ملف Excel على الأعمدة التالية:</p>
+                            <ul>
+                                <li>رقم التسجيل - إلزامي</li>
+                                <li>نوع المركبة - إلزامي</li>
+                                <li>العلامة التجارية - اختياري</li>
+                                <li>الموديل - إلزامي</li>
+                                <li>سنة الصنع - إلزامي</li>
+                                <li>السعة - اختياري</li>
+                                <li>الحالة - إلزامي</li>
+                                <li>سعر الشراء - اختياري</li>
+                                <li>تاريخ الشراء - اختياري</li>
+                                <li>تاريخ انتهاء التسجيل - اختياري</li>
+                                <li>تاريخ انتهاء التأمين - اختياري</li>
+                                <li>تاريخ انتهاء الفحص - اختياري</li>
+                                <li>تاريخ انتهاء رخصة القيادة - اختياري</li>
+                                <li>المسافة المقطوعة - اختياري</li>
+                                <li>المسافة للصيانة القادمة - اختياري</li>
+                                <li>نوع الصيانة القادمة - اختياري</li>
+                                <li>ملاحظات - اختياري</li>
+                            </ul>
+                            <p class="mb-0">
+                                <a href="{{ url_for('vehicles.export_template') }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i> تحميل نموذج Excel
+                                </a>
+                            </p>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary">عودة</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

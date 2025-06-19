@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                font-size: 12pt;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .table {
+                width: 100%;
+            }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fc;
+        }
+        
+        .receipt-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4e73df;
+            margin-bottom: 20px;
+        }
+        
+        .receipt-title {
+            font-weight: bold;
+            color: #4e73df;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-logo {
+            max-height: 80px;
+            margin-bottom: 15px;
+        }
+        
+        .receipt-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+        }
+        
+        .receipt-date {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        .receipt-body {
+            margin-bottom: 30px;
+        }
+        
+        .receipt-info {
+            margin-bottom: 20px;
+        }
+        
+        .receipt-amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4e73df;
+            text-align: center;
+            padding: 15px;
+            border: 2px dashed #4e73df;
+            border-radius: 5px;
+            margin: 15px 0;
+            background-color: #f8f9ff;
+        }
+        
+        .receipt-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .print-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .signature-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+        
+        .signature {
+            width: 45%;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            text-align: center;
+            margin-top: 70px;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <div class="receipt-title">إيصال دفع اشتراك النقل المدرسي</div>
+            <div class="receipt-number">رقم الإيصال: {% if subscription.receipt_number %}{{ subscription.receipt_number }}{% else %}{{ subscription.id }}{% endif %}</div>
+            <div class="receipt-date">تاريخ الدفع: {{ subscription.payment_date.strftime('%Y-%m-%d') }}</div>
+        </div>
+        
+        <div class="receipt-body">
+            <div class="receipt-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>اسم التلميذ:</strong> {{ subscription.student.full_name }}</p>
+                        <p><strong>رقم التلميذ:</strong> {{ subscription.student.student_id }}</p>
+                        <p><strong>المستوى الدراسي:</strong> {{ subscription.student.educational_level }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>اسم ولي الأمر:</strong> {{ subscription.student.guardian_name }}</p>
+                        <p><strong>رقم هاتف ولي الأمر:</strong> {{ subscription.student.guardian_phone }}</p>
+                        <p><strong>فترة الاشتراك:</strong> {{ month_name }} / {{ subscription.year }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="receipt-amount">
+                المبلغ المدفوع: {{ subscription.amount }} درهم
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>طريقة الدفع:</strong> 
+                    {% if subscription.payment_method == 'cash' %}
+                    نقداً
+                    {% elif subscription.payment_method == 'bank_transfer' %}
+                    تحويل بنكي
+                    {% elif subscription.payment_method == 'check' %}
+                    شيك
+                    {% else %}
+                    {{ subscription.payment_method }}
+                    {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            {% if subscription.notes %}
+            <div class="mt-3">
+                <p><strong>ملاحظات:</strong> {{ subscription.notes }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="signature-area">
+                <div class="signature">
+                    <p>توقيع ولي الأمر</p>
+                </div>
+                <div class="signature">
+                    <p>ختم الجمعية</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="receipt-footer">
+            <p>جمعية تلحاج بوبكر - خدمة النقل المدرسي</p>
+            <p>شكراً لكم على ثقتكم في خدماتنا</p>
+        </div>
+    </div>
+    
+    <button class="btn btn-primary print-btn no-print" onclick="window.print();">
+        <i class="fas fa-print"></i> طباعة الإيصال
+    </button>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html> 

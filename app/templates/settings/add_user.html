@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">إضافة مستخدم جديد</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('settings.add_user') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control") }}
+                            {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.username.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.email.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.full_name.label(class="form-label") }}
+                            {{ form.full_name(class="form-control") }}
+                            {% if form.full_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.full_name.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control") }}
+                            {% if form.password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password2.label(class="form-label") }}
+                            {{ form.password2(class="form-control") }}
+                            {% if form.password2.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password2.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.role.label(class="form-label") }}
+                            {{ form.role(class="form-select") }}
+                            {% if form.role.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.role.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.is_active(class="form-check-input") }}
+                            {{ form.is_active.label(class="form-check-label") }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('settings.users') }}" class="btn btn-secondary">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

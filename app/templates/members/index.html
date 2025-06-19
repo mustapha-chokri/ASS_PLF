@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">لائحة المنخرطين</h1>
+        <a href="{{ url_for('members.add') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> إضافة منخرط جديد
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">بيانات المنخرطين</h6>
+            <div>
+                <input type="text" id="memberSearch" class="form-control form-control-sm" placeholder="بحث...">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="membersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>رقم الانخراط</th>
+                            <th>الاسم الكامل</th>
+                            <th>بطاقة التعريف</th>
+                            <th>رقم الهاتف</th>
+                            <th>تاريخ الانخراط</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.membership_number }}</td>
+                            <td>{{ member.full_name }}</td>
+                            <td>{{ member.id_card }}</td>
+                            <td>{{ member.phone }}</td>
+                            <td>{{ member.join_date.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                {% if member.status == 'active' %}
+                                <span class="badge badge-success">نشط</span>
+                                {% elif member.status == 'inactive' %}
+                                <span class="badge badge-warning">غير نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">مجمد</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('members.view', id=member.id) }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('members.edit', id=member.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.is_admin %}
+                                <a href="{{ url_for('members.delete', id=member.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا المنخرط؟');">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $("#memberSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#membersTable tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+</script>
+{% endblock %} 

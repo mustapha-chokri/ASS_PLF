@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">المالية</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                الخزينة (الحالية)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ treasury_balance|default(0) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                المداخيل السنوية</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ yearly_income|default(0) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-arrow-up fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                المصاريف السنوية</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ yearly_expense|default(0) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-arrow-down fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                الرصيد السنوي</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ (yearly_income|default(0) - yearly_expense|default(0)) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">المداخيل الأخيرة</h6>
+                    <a href="{{ url_for('finance.income') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> إضافة دخل جديد
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>المصدر</th>
+                                    <th>التصنيف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_income %}
+                                    {% for income in recent_income %}
+                                    <tr>
+                                        <td>{{ income.income_date.strftime('%d-%m-%Y') }}</td>
+                                        <td>{{ income.amount }} دم</td>
+                                        <td>{{ income.source|default('') }}</td>
+                                        <td>{{ income.category|default('') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">لا توجد مداخيل مسجلة</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('finance.income') }}" class="btn btn-primary btn-sm">
+                            عرض كل المداخيل <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">المصاريف الأخيرة</h6>
+                    <a href="{{ url_for('finance.expense') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-plus"></i> إضافة مصروف جديد
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>الغرض</th>
+                                    <th>التصنيف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_expense %}
+                                    {% for expense in recent_expense %}
+                                    <tr>
+                                        <td>{{ expense.expense_date.strftime('%d-%m-%Y') }}</td>
+                                        <td>{{ expense.amount }} دم</td>
+                                        <td>{{ expense.purpose|default('') }}</td>
+                                        <td>{{ expense.category|default('') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">لا توجد مصاريف مسجلة</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('finance.expense') }}" class="btn btn-primary btn-sm">
+                            عرض كل المصاريف <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">الرسم البياني للمداخيل والمصاريف</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="financialChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // تهيئة الرسم البياني
+    $(document).ready(function() {
+        var ctx = document.getElementById("financialChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+                datasets: [{
+                    label: "المداخيل",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(78, 115, 223, 0.05)",
+                    borderColor: "rgba(78, 115, 223, 1)",
+                    pointRadius: 3,
+                    pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                    pointBorderColor: "rgba(78, 115, 223, 1)",
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    data: {{ monthly_income|default([0]*12)|tojson }},
+                },
+                {
+                    label: "المصاريف",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(231, 74, 59, 0.05)",
+                    borderColor: "rgba(231, 74, 59, 1)",
+                    pointRadius: 3,
+                    pointBackgroundColor: "rgba(231, 74, 59, 1)",
+                    pointBorderColor: "rgba(231, 74, 59, 1)",
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: "rgba(231, 74, 59, 1)",
+                    pointHoverBorderColor: "rgba(231, 74, 59, 1)",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    data: {{ monthly_expense|default([0]*12)|tojson }},
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'date'
+                        },
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return value + ' دم';
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: true
+                },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                            return datasetLabel + ': ' + tooltipItem.yLabel + ' دم';
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

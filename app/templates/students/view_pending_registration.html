@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            {% if pending.status == 'pending' and pending.first_name %}
+                <form action="{{ url_for('students.approve_pending_registration', id=pending.id) }}" method="post" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                    <button type="submit" class="btn btn-sm btn-success shadow-sm mr-2">
+                        <i class="fas fa-check fa-sm text-white-50"></i> الموافقة على الطلب
+                    </button>
+                </form>
+                <button type="button" class="btn btn-sm btn-danger shadow-sm mr-2" data-toggle="modal" data-target="#rejectModal">
+                    <i class="fas fa-times fa-sm text-white-50"></i> رفض الطلب
+                </button>
+            {% endif %}
+            
+            <a href="{{ url_for('students.pending_registrations') }}" class="btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة الطلبات
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    {% if pending.status == 'pending' %}
+        <div class="alert alert-warning">
+            <i class="fas fa-clock"></i> هذا الطلب قيد الانتظار للمراجعة.
+            {% if not pending.first_name %}
+                <strong>لم يتم تعبئة النموذج من قبل ولي الأمر بعد.</strong>
+            {% endif %}
+        </div>
+    {% elif pending.status == 'approved' %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> تمت الموافقة على هذا الطلب وإضافة التلميذ بنجاح.
+        </div>
+    {% elif pending.status == 'rejected' %}
+        <div class="alert alert-danger">
+            <i class="fas fa-times-circle"></i> تم رفض هذا الطلب.
+            {% if pending.admin_notes %}
+                <strong>السبب:</strong> {{ pending.admin_notes }}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Registration Token Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">بيانات الطلب</h6>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>رمز التسجيل:</strong>
+                </div>
+                <div class="col-md-9">
+                    {{ pending.registration_token }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>تاريخ إنشاء الطلب:</strong>
+                </div>
+                <div class="col-md-9">
+                    {{ pending.submission_date.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>حالة الطلب:</strong>
+                </div>
+                <div class="col-md-9">
+                    {% if pending.status == 'pending' %}
+                        <span class="badge badge-warning">قيد الانتظار</span>
+                    {% elif pending.status == 'approved' %}
+                        <span class="badge badge-success">مقبول</span>
+                    {% elif pending.status == 'rejected' %}
+                        <span class="badge badge-danger">مرفوض</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if pending.notes %}
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>ملاحظات:</strong>
+                </div>
+                <div class="col-md-9">
+                    {{ pending.notes|nl2br }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if pending.first_name %}
+        <!-- Student Information -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">بيانات التلميذ</h6>
+            </div>
+            <div class="card-body">
+                <!-- Basic Information -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>الاسم الكامل:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.full_name }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>الجنس:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {% if pending.gender == 'male' %}
+                                    ذكر
+                                {% else %}
+                                    أنثى
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>تاريخ الازدياد:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.birth_date.strftime('%Y-%m-%d') if pending.birth_date else '-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>رقم مسار:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.massar_number or '-' }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>المستوى الدراسي:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.educational_level }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>المؤسسة:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.institution or '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Photo -->
+                {% if pending.student_photo %}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="text-primary">صورة التلميذ:</h6>
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename=pending.student_photo) }}" alt="صورة التلميذ" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Guardian Information -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">بيانات ولي الأمر</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>اسم ولي الأمر:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_name }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>رقم البطاقة الوطنية:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_national_id or '-' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>رقم الهاتف:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_phone }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>البريد الإلكتروني:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_email or '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Address -->
+                {% if pending.address %}
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <strong>العنوان:</strong>
+                        </div>
+                        <div class="col-md-10">
+                            {{ pending.address }}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Documents -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h6 class="text-primary mb-3">المستندات المرفقة:</h6>
+                        <div class="row">
+                            {% if pending.guardian_id_front %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">البطاقة الوطنية (الوجه الأمامي)</div>
+                                        <div class="card-body text-center">
+                                            <a href="{{ url_for('static', filename=pending.guardian_id_front) }}" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i> عرض
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if pending.guardian_id_back %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">البطاقة الوطنية (الوجه الخلفي)</div>
+                                        <div class="card-body text-center">
+                                            <a href="{{ url_for('static', filename=pending.guardian_id_back) }}" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i> عرض
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if pending.commitment_doc %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">الالتزام الموقع</div>
+                                        <div class="card-body text-center">
+                                            <a href="{{ url_for('static', filename=pending.commitment_doc) }}" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i> عرض
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if not pending.guardian_id_front and not pending.guardian_id_back and not pending.commitment_doc %}
+                                <div class="col-md-12">
+                                    <div class="alert alert-secondary text-center">
+                                        لم يتم إرفاق أي مستندات
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notes -->
+        {% if pending.notes %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">ملاحظات إضافية</h6>
+                </div>
+                <div class="card-body">
+                    {{ pending.notes|nl2br }}
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Form Not Filled -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-warning text-white">
+                <h6 class="m-0 font-weight-bold">نموذج التسجيل لم يتم تعبئته بعد</h6>
+            </div>
+            <div class="card-body">
+                <p>لم يقم ولي الأمر بتعبئة نموذج التسجيل بعد. تم إنشاء رابط التسجيل فقط.</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>اسم ولي الأمر:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_name }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>رقم الهاتف:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_phone }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>البريد الإلكتروني:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                {{ pending.guardian_email or '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6 class="mb-2"><i class="fas fa-link"></i> رابط التسجيل:</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ request.host_url }}students/register/{{ pending.registration_token }}" id="registration-link" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" onclick="copyLink()">
+                                <i class="fas fa-copy"></i> نسخ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">تأكيد الرفض</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for('students.reject_pending_registration', id=pending.id) }}" method="post">
+                <div class="modal-body">
+                    <p>هل أنت متأكد من رفض طلب تسجيل <strong>{{ pending.full_name }}</strong>؟</p>
+                    <div class="form-group">
+                        <label for="reject_reason">سبب الرفض:</label>
+                        <textarea class="form-control" id="reject_reason" name="reject_reason" rows="3"></textarea>
+                    </div>
+                    {{ form.csrf_token }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">رفض</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink() {
+    var copyText = document.getElementById("registration-link");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+    
+    // Change button text temporarily
+    var button = document.querySelector(".input-group-append button");
+    var originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-success');
+    
+    // Restore button after 2 seconds
+    setTimeout(function() {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+    }, 2000);
+}
+</script>
+{% endblock %} 

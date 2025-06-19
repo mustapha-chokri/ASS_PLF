@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm" id="card-{{ member.id }}">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    {% if member.image %}
+                        <img src="/{{ member.image }}" alt="صورة العضو" class="rounded-circle border me-3" style="height: 60px; width: 60px; object-fit: cover;">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-3x text-white me-3"></i>
+                    {% endif %}
+                    <h4 class="mb-0">{{ member.first_name }} {{ member.last_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>الصفة داخل المكتب:</strong></div>
+                        <div class="col-6">{{ member.position }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>فترة الانتداب:</strong></div>
+                        <div class="col-6">{{ member.mandate_period or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>تاريخ الانخراط:</strong></div>
+                        <div class="col-6">{{ member.join_date or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>الجنسية:</strong></div>
+                        <div class="col-6">{{ member.nationality or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>الحالة العائلية:</strong></div>
+                        <div class="col-6">{{ member.family_status or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>اسم الأب:</strong></div>
+                        <div class="col-6">{{ member.father_name or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>اسم الأم:</strong></div>
+                        <div class="col-6">{{ member.mother_name or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>رقم البطاقة الوطنية:</strong></div>
+                        <div class="col-6">{{ member.national_id or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>العنوان:</strong></div>
+                        <div class="col-6">{{ member.address or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>المهنة:</strong></div>
+                        <div class="col-6">{{ member.job or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>مكان الازدياد:</strong></div>
+                        <div class="col-6">{{ member.birth_place or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>تاريخ الازدياد:</strong></div>
+                        <div class="col-6">{{ member.birth_date or '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>بيانات إضافية:</strong></div>
+                        <div class="col-6">{{ member.card_data or '-' }}</div>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button class="btn btn-outline-secondary" onclick="printCard('card-{{ member.id }}')"><i class="fas fa-print"></i> طباعة البطاقة</button>
+                    <a href="{{ url_for('dashboard.board') }}" class="btn btn-primary">رجوع</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function printCard(cardId) {
+    // يمكنك تحسين هذه الدالة لطباعة البطاقة فقط
+    window.print();
+}
+</script>
+{% endblock %} 

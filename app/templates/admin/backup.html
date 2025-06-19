@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">إدارة النسخ الاحتياطي</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">إنشاء نسخة احتياطية</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.create_backup') }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> إنشاء نسخة احتياطية جديدة
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">النسخ الاحتياطية المتوفرة</h5>
+                </div>
+                <div class="card-body">
+                    {% if backups %}
+                        <div class="list-group">
+                            {% for backup in backups %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ backup.filename }}</h6>
+                                            <small class="text-muted">{{ backup.date }}</small>
+                                        </div>
+                                        <div>
+                                            <form method="POST" action="{{ url_for('admin.restore_backup') }}" class="d-inline">
+                                                <input type="hidden" name="backup_file" value="{{ backup.path }}">
+                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('هل أنت متأكد من استعادة هذه النسخة؟')">
+                                                    <i class="fas fa-undo"></i> استعادة
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin.delete_backup') }}" class="d-inline">
+                                                <input type="hidden" name="backup_file" value="{{ backup.path }}">
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذه النسخة؟')">
+                                                    <i class="fas fa-trash"></i> حذف
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">لا توجد نسخ احتياطية متوفرة</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

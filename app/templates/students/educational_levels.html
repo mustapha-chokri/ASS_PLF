@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addLevelModal">
+            <i class="fas fa-plus fa-sm text-white-50"></i> إضافة مستوى دراسي جديد
+        </a>
+    </div>
+
+    <!-- Educational Levels List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">المستويات الدراسية</h6>
+        </div>
+        <div class="card-body">
+            {% if levels %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>المستوى الدراسي</th>
+                            <th>الترتيب</th>
+                            <th>الوصف</th>
+                            <th>عدد التلاميذ</th>
+                            <th class="actions-column">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for level in levels %}
+                        <tr>
+                            <td class="editable" data-id="{{ level.id }}" data-field="name">{{ level.name }}</td>
+                            <td class="editable" data-id="{{ level.id }}" data-field="order">{{ level.order }}</td>
+                            <td class="editable" data-id="{{ level.id }}" data-field="description">{{ level.description or 'لا يوجد' }}</td>
+                            <td>{{ level.students_count }}</td>
+                            <td class="actions-column">
+                                <a href="#" class="btn btn-sm btn-warning edit-level" data-id="{{ level.id }}" data-name="{{ level.name }}" data-order="{{ level.order }}" data-description="{{ level.description or '' }}" data-bs-toggle="modal" data-bs-target="#editLevelModal">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger delete-level" data-id="{{ level.id }}" data-name="{{ level.name }}" data-bs-toggle="modal" data-bs-target="#deleteLevelModal">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-gray-500">لا توجد مستويات دراسية حالياً</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLevelModal">
+                    <i class="fas fa-plus"></i> إضافة مستوى دراسي جديد
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Level Modal -->
+<div class="modal fade" id="addLevelModal" tabindex="-1" aria-labelledby="addLevelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addLevelModalLabel">إضافة مستوى دراسي جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('students.add_educational_level') }}">
+                {{ form.csrf_token }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">المستوى الدراسي *</label>
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="order" class="form-label">الترتيب *</label>
+                        {{ form.order(class="form-control", type="number") }}
+                        <div class="form-text">يتم استخدام الترتيب لعرض المستويات بشكل مرتب</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">الوصف</label>
+                        {{ form.description(class="form-control", rows="3") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إضافة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Level Modal -->
+<div class="modal fade" id="editLevelModal" tabindex="-1" aria-labelledby="editLevelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLevelModalLabel">تعديل مستوى دراسي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" id="editLevelForm" action="#">
+                {{ edit_form.csrf_token }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">المستوى الدراسي *</label>
+                        {{ edit_form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="order" class="form-label">الترتيب *</label>
+                        {{ edit_form.order(class="form-control", type="number") }}
+                        <div class="form-text">يتم استخدام الترتيب لعرض المستويات بشكل مرتب</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">الوصف</label>
+                        {{ edit_form.description(class="form-control", rows="3") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Level Modal -->
+<div class="modal fade" id="deleteLevelModal" tabindex="-1" aria-labelledby="deleteLevelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteLevelModalLabel">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف المستوى الدراسي <strong id="levelName"></strong>؟</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span>تحذير: سيتم حذف المستوى الدراسي من قاعدة البيانات بشكل نهائي.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <a href="#" id="deleteLevelButton" class="btn btn-danger">حذف</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup for edit modal
+    let editButtons = document.querySelectorAll('.edit-level');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            let id = this.getAttribute('data-id');
+            let name = this.getAttribute('data-name');
+            let order = this.getAttribute('data-order');
+            let description = this.getAttribute('data-description');
+            
+            document.getElementById('editLevelForm').action = "{{ url_for('students.edit_educational_level', id=0) }}".replace('/0', '/' + id);
+            document.getElementById('editLevelForm').querySelector('#name').value = name;
+            document.getElementById('editLevelForm').querySelector('#order').value = order;
+            document.getElementById('editLevelForm').querySelector('#description').value = description;
+        });
+    });
+    
+    // Setup for delete modal
+    let deleteButtons = document.querySelectorAll('.delete-level');
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            let id = this.getAttribute('data-id');
+            let name = this.getAttribute('data-name');
+            
+            document.getElementById('levelName').textContent = name;
+            document.getElementById('deleteLevelButton').href = "{{ url_for('students.delete_educational_level', id=0) }}".replace('/0', '/' + id);
+        });
+    });
+
+    // Setup for inline editing
+    let editableCells = document.querySelectorAll('.editable');
+    editableCells.forEach(function(cell) {
+        cell.addEventListener('click', function() {
+            let currentValue = this.textContent.trim();
+            let field = this.getAttribute('data-field');
+            let id = this.getAttribute('data-id');
+            
+            // Create input element
+            let input = document.createElement('input');
+            input.type = field === 'order' ? 'number' : 'text';
+            input.value = currentValue;
+            input.className = 'form-control';
+            
+            // Replace cell content with input
+            this.textContent = '';
+            this.appendChild(input);
+            input.focus();
+            
+            // Handle input events
+            input.addEventListener('blur', function() {
+                let newValue = this.value.trim();
+                if (newValue !== currentValue) {
+                    // Send update to server
+                    fetch(`{{ url_for('students.update_educational_level_field', id=0) }}`.replace('/0', '/' + id), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            field: field,
+                            value: newValue
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            cell.textContent = newValue;
+                        } else {
+                            alert('حدث خطأ أثناء تحديث البيانات');
+                            cell.textContent = currentValue;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء تحديث البيانات');
+                        cell.textContent = currentValue;
+                    });
+                } else {
+                    cell.textContent = currentValue;
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

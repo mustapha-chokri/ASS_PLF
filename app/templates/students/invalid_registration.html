@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - جمعية دعم التمدرس</title>
+    
+    <!-- Custom fonts for this template-->
+    <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Cairo:400,700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.rtl.min.css') }}" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Cairo', sans-serif;
+        }
+        .error-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-height: 120px;
+            margin-bottom: 10px;
+        }
+        .error-card {
+            border-color: #e74a3b;
+            padding: 20px;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 5rem;
+            color: #e74a3b;
+            margin-bottom: 20px;
+        }
+        .registration-footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <!-- Logo and Header -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="شعار الجمعية" class="logo">
+            <h2>جمعية دعم التمدرس</h2>
+        </div>
+        
+        <!-- Error Message -->
+        <div class="card shadow error-card mb-4">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="text-danger mb-4">رابط غير صالح</h3>
+            
+            <div class="alert alert-danger">
+                عذراً، الرابط الذي تحاول الوصول إليه غير صالح أو منتهي الصلاحية.
+            </div>
+            
+            <div class="card-body">
+                <p>الأسباب المحتملة:</p>
+                <ul class="text-right">
+                    <li>تم استخدام هذا الرابط سابقاً</li>
+                    <li>انتهت صلاحية الرابط</li>
+                    <li>تم إلغاء طلب التسجيل</li>
+                    <li>هناك خطأ في الرابط المستخدم</li>
+                </ul>
+                
+                <hr>
+                
+                <div class="mt-4">
+                    <h5>ماذا يمكنك أن تفعل؟</h5>
+                    <p>يرجى التواصل مع إدارة الجمعية للحصول على رابط تسجيل جديد.</p>
+                    
+                    <div class="contact-info mt-4">
+                        <p><i class="fas fa-phone"></i> <span dir="ltr">+212 XXXXXXXXX</span></p>
+                        <p><i class="fas fa-envelope"></i> info@example.com</p>
+                    </div>
+                </div>
+                
+                <a href="javascript:history.back();" class="btn btn-secondary mt-3">
+                    <i class="fas fa-arrow-right"></i> العودة للصفحة السابقة
+                </a>
+            </div>
+        </div>
+        
+        <div class="registration-footer">
+            <p>جمعية دعم التمدرس &copy; {{ now.year }} - جميع الحقوق محفوظة</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html> 

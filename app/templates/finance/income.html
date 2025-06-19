@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block additional_styles %}
+<style>
+@media print {
+    .filter-section, .action-buttons, .no-print {
+        display: none !important;
+    }
+    .table-responsive {
+        overflow: visible !important;
+    }
+    .table {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+    .table td, .table th {
+        padding: 0.5rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    .chart-container {
+        page-break-before: always;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>المداخيل</h2>
+        </div>
+        <div class="col-md-6 text-left no-print">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addIncomeModal">
+                إضافة مدخول جديد
+            </button>
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#exportIncomeModal">
+                تصدير إلى Excel
+            </button>
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#importIncomeModal">
+                استيراد من Excel
+            </button>
+            <button type="button" class="btn btn-secondary" id="printButton">
+                طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- بطاقة المجموع -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">المجموع</h5>
+            <h3 class="text-success">{{ total_amount }} دم</h3>
+        </div>
+    </div>
+
+    <!-- نموذج التصفية -->
+    <div class="card mb-4 filter-section">
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ request.args.get('start_date', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ request.args.get('end_date', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>المصدر</label>
+                        <select name="source_id" class="form-control">
+                            <option value="">الكل</option>
+                            {% for source in income_sources %}
+                            <option value="{{ source.id }}" {% if request.args.get('source_id')|int == source.id %}selected{% endif %}>
+                                {{ source.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>نوع الدفع</label>
+                        <select name="payment_type" class="form-control">
+                            <option value="">الكل</option>
+                            {% for type in payment_types %}
+                            <option value="{{ type }}" {% if request.args.get('payment_type') == type %}selected{% endif %}>
+                                {{ type }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">تصفية</button>
+                    <a href="{{ url_for('finance.income') }}" class="btn btn-secondary">إعادة تعيين</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول المداخيل -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>العملية</th>
+                            <th>المبلغ</th>
+                            <th>التاريخ</th>
+                            <th>نوع الدفع</th>
+                            <th>المصدر</th>
+                            <th>المسؤول</th>
+                            <th>ملاحظات</th>
+                            <th class="action-buttons">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for income in incomes %}
+                        <tr id="income-row-{{ income.id }}">
+                            <td>{{ income.operation }}</td>
+                            <td>{{ income.amount }} دم</td>
+                            <td>{{ income.income_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ income.payment_type }}</td>
+                            <td>{{ income.income_source.name }}</td>
+                            <td>{{ income.responsible.full_name }}</td>
+                            <td>{{ income.notes or '' }}</td>
+                            <td class="action-buttons">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="editIncome({{ income.id }})">
+                                    تعديل
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteIncome({{ income.id }})">
+                                    حذف
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسم البياني -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">أعلى 5 مصادر دخول</h5>
+            <canvas id="incomeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إضافة مدخول -->
+<div class="modal fade" id="addIncomeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة مدخول جديد</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="addIncomeForm" action="{{ url_for('finance.add_income') }}" method="POST">
+                {{ form.csrf_token }}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>العملية</label>
+                        <input type="text" name="operation" id="operation" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ</label>
+                        <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التاريخ</label>
+                        <input type="date" name="income_date" id="income_date" class="form-control" value="{{ today }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الدفع</label>
+                        <select name="payment_type" id="payment_type" class="form-control" required>
+                            {% for type in payment_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المصدر</label>
+                        <select name="income_source_id" id="income_source_id" class="form-control" required>
+                            {% for source in income_sources %}
+                            <option value="{{ source.id }}">{{ source.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المسؤول</label>
+                        <select name="responsible_id" id="responsible_id" class="form-control" required>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل مدخول -->
+<div class="modal fade" id="editIncomeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل المدخول</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="editIncomeForm" method="POST">
+                {{ form.csrf_token }}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>العملية</label>
+                        <input type="text" name="operation" id="edit_operation" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ</label>
+                        <input type="number" step="0.01" name="amount" id="edit_amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التاريخ</label>
+                        <input type="date" name="income_date" id="edit_income_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الدفع</label>
+                        <select name="payment_type" id="edit_payment_type" class="form-control" required>
+                            {% for type in payment_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المصدر</label>
+                        <select name="income_source_id" id="edit_income_source_id" class="form-control" required>
+                            {% for source in income_sources %}
+                            <option value="{{ source.id }}">{{ source.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المسؤول</label>
+                        <select name="responsible_id" id="edit_responsible_id" class="form-control" required>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea name="notes" id="edit_notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تصدير -->
+<div class="modal fade" id="exportIncomeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تصدير المداخيل</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="exportIncomeForm" action="{{ url_for('finance.export_incomes') }}" method="GET">
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" name="start_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" name="end_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>المصدر</label>
+                        <select name="source_id" class="form-control">
+                            <option value="">الكل</option>
+                            {% for source in income_sources %}
+                            <option value="{{ source.id }}">{{ source.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الدفع</label>
+                        <select name="payment_type" class="form-control">
+                            <option value="">الكل</option>
+                            {% for type in payment_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">تصدير</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // تهيئة الرسم البياني
+    const ctx = document.getElementById('incomeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: 'الإيرادات حسب المصدر',
+                data: {{ chart_data|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // تفعيل زر الطباعة
+    $('#printButton').on('click', function() {
+        window.print();
+    });
+});
+
+// دالة تعديل الإيراد
+function editIncome(id) {
+    $.ajax({
+        url: `/finance/income/${id}`,
+        method: 'GET',
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function(response) {
+            if (response && response.income) {
+                const data = response.income;
+                $('#edit_operation').val(data.operation);
+                $('#edit_amount').val(data.amount);
+                $('#edit_income_date').val(data.income_date);
+                $('#edit_payment_type').val(data.payment_type);
+                $('#edit_income_source_id').val(data.income_source_id);
+                $('#edit_responsible_id').val(data.responsible_id);
+                $('#edit_notes').val(data.notes || '');
+                
+                $('#editIncomeForm').attr('action', `/finance/edit_income/${id}`);
+                $('#editIncomeModal').modal('show');
+            } else {
+                alert('لم يتم العثور على بيانات الإيراد');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('حدث خطأ أثناء جلب بيانات الإيراد');
+        }
+    });
+}
+
+// دالة حذف الإيراد
+function deleteIncome(id) {
+    if (confirm('هل أنت متأكد من حذف هذا المدخول؟')) {
+        fetch(`/finance/delete_income/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.getElementById(`income-row-${id}`);
+                if (row) {
+                    row.remove();
+                }
+                // تحديث المجموع
+                const amount = parseFloat(row.querySelector('td:nth-child(2)').textContent);
+                const totalElement = document.querySelector('.text-success');
+                const currentTotal = parseFloat(totalElement.textContent);
+                totalElement.textContent = (currentTotal - amount).toFixed(2) + ' دم';
+            } else {
+                alert(data.message || 'حدث خطأ أثناء حذف المدخول');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف المدخول');
+        });
+    }
+}
+
+// تفعيل نموذج الاستيراد
+$('#importIncomeForm').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+        url: '/finance/import_incomes',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            'X-CSRFToken': $('input[name="csrf_token"]').val()
+        },
+        success: function(response) {
+            if (response && response.success) {
+                alert(response.message);
+                if (response.errors && response.errors.length > 0) {
+                    console.log('الأخطاء:', response.errors);
+                }
+                location.reload();
+            } else {
+                alert(response.message || 'حدث خطأ أثناء استيراد البيانات');
+                if (response.errors) {
+                    console.log('الأخطاء:', response.errors);
+                }
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('حدث خطأ أثناء استيراد البيانات');
+        }
+    });
+});
+
+// تفعيل نموذج التصدير
+$('#exportIncomeForm').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var queryString = new URLSearchParams(formData).toString();
+    window.location.href = `/finance/export_incomes?${queryString}`;
+});
+</script>
+<!-- Modal استيراد -->
+<div class="modal fade" id="importIncomeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">استيراد المداخيل</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="importIncomeForm" action="{{ url_for('finance.import_incomes') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>اختر ملف Excel</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        <small class="form-text text-muted">
+                            يجب أن يحتوي الملف على الأعمدة التالية: العملية، المبلغ، التاريخ، نوع الدفع، المصدر، المسؤول
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <a href="{{ url_for('finance.download_income_template') }}" class="btn btn-info">
+                            <i class="fas fa-download"></i> تحميل قالب Excel
+                        </a>
+                    </div>
+                    <button type="submit" class="btn btn-primary">استيراد</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %} 

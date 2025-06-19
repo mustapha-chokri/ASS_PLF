@@ -1,0 +1,6 @@
+Este es un marcador de posición para el logotipo de la asociación.
+
+Por favor, coloque un archivo de imagen llamado "logo.png" en esta carpeta.
+El logotipo debe tener un tamaño recomendado de 200x200 píxeles.
+
+Para un resultado óptimo, utilice una imagen con fondo transparente (formato PNG). 

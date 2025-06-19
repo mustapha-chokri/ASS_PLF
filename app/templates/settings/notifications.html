@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الإشعارات{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">إعدادات الإشعارات</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">إعدادات عامة</h5>
+                            <div class="form-check mb-3">
+                                {{ form.email_notifications(class="form-check-input") }}
+                                {{ form.email_notifications.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.sms_notifications(class="form-check-input") }}
+                                {{ form.sms_notifications.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.notification_sound(class="form-check-input") }}
+                                {{ form.notification_sound.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.notification_desktop(class="form-check-input") }}
+                                {{ form.notification_desktop.label(class="form-check-label") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="mb-3">معلومات الاتصال</h5>
+                            <div class="mb-3">
+                                {{ form.notification_email.label(class="form-label") }}
+                                {{ form.notification_email(class="form-control") }}
+                                {% if form.notification_email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.notification_email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.notification_sms.label(class="form-label") }}
+                                {{ form.notification_sms(class="form-control") }}
+                                {% if form.notification_sms.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.notification_sms.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('settings.index') }}" class="btn btn-secondary">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

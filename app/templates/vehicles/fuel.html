@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('vehicles.add_fuel') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> إضافة تزويد وقود جديد
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Total Fuel Cost Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                إجمالي تكلفة الوقود</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-fuel-cost">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-gas-pump fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Fuel Quantity Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                إجمالي كمية الوقود</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-fuel-quantity">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tint fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Fuel Cost Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                متوسط تكلفة الوقود</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="average-fuel-cost">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fuel Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة تزويد الوقود</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="fuelTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>السيارة</th>
+                            <th>التاريخ</th>
+                            <th>الكمية (لتر)</th>
+                            <th>التكلفة</th>
+                            <th>نوع الوقود</th>
+                            <th>محطة الوقود</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fuel in fuel_records %}
+                        <tr>
+                            <td>{{ fuel.vehicle.registration_number }}</td>
+                            <td>{{ fuel.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ fuel.quantity }}</td>
+                            <td>{{ fuel.cost }}</td>
+                            <td>{{ fuel.fuel_type }}</td>
+                            <td>{{ fuel.station }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('vehicles.edit_fuel', id=fuel.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('vehicles.delete_fuel', id=fuel.id) }}" method="post" class="d-inline"
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا التزويد؟');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#fuelTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+            }
+        });
+
+        // Load fuel statistics
+        $.getJSON("{{ url_for('vehicles.fuel_statistics') }}", function(data) {
+            $('#total-fuel-cost').text(data.total_cost);
+            $('#total-fuel-quantity').text(data.total_quantity);
+            $('#average-fuel-cost').text(data.average_cost);
+        });
+    });
+</script>
+{% endblock %} 

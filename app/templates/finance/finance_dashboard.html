@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- عنوان الصفحة -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">لوحة المالية</h1>
+    </div>
+
+    <!-- بطاقات الإحصائيات -->
+    <div class="row">
+        <!-- إجمالي المداخيل -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                إجمالي المداخيل</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_income }} ريال</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- إجمالي المصاريف -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                إجمالي المصاريف</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_expenses }} ريال</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الرصيد المتبقي -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                الرصيد المتبقي</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ balance }} ريال</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- عدد المعاملات -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                عدد المعاملات</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_transactions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row">
+        <!-- رسم بياني للمداخيل والمصاريف -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">المداخيل والمصاريف</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- رسم بياني دائري لأنواع المصاريف -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">توزيع المصاريف</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="expenseTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- المعاملات الأخيرة -->
+    <div class="row">
+        <!-- المداخيل الأخيرة -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">المداخيل الأخيرة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>المصدر</th>
+                                    <th>المبلغ</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for income in recent_incomes %}
+                                <tr>
+                                    <td>{{ income.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ income.source.name }}</td>
+                                    <td>{{ income.amount }} ريال</td>
+                                    <td>{{ income.description|default('-') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- المصاريف الأخيرة -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">المصاريف الأخيرة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>النوع</th>
+                                    <th>المبلغ</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in recent_expenses %}
+                                <tr>
+                                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ expense.type.name }}</td>
+                                    <td>{{ expense.amount }} ريال</td>
+                                    <td>{{ expense.description|default('-') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// رسم بياني للمداخيل والمصاريف
+var ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+var incomeExpenseChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ dates|tojson }},
+        datasets: [{
+            label: 'المداخيل',
+            data: {{ income_data|tojson }},
+            borderColor: 'rgb(28, 200, 138)',
+            backgroundColor: 'rgba(28, 200, 138, 0.1)',
+            tension: 0.1
+        }, {
+            label: 'المصاريف',
+            data: {{ expense_data|tojson }},
+            borderColor: 'rgb(231, 74, 59)',
+            backgroundColor: 'rgba(231, 74, 59, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// رسم بياني دائري لأنواع المصاريف
+var ctx2 = document.getElementById('expenseTypeChart').getContext('2d');
+var expenseTypeChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: {{ expense_types|tojson }},
+        datasets: [{
+            data: {{ expense_type_data|tojson }},
+            backgroundColor: [
+                'rgba(231, 74, 59, 0.8)',
+                'rgba(246, 194, 62, 0.8)',
+                'rgba(28, 200, 138, 0.8)',
+                'rgba(54, 185, 204, 0.8)',
+                'rgba(133, 135, 150, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

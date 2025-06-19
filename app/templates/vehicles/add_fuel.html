@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('vehicles.fuel') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة الوقود
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">بيانات تزويد الوقود</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('vehicles.add_fuel') }}">
+                        {{ form.csrf_token }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="vehicle_id">السيارة</label>
+                                    <select class="form-control" id="vehicle_id" name="vehicle_id" required>
+                                        <option value="">اختر السيارة</option>
+                                        {% for vehicle in vehicles %}
+                                        <option value="{{ vehicle.id }}">{{ vehicle.registration_number }} - {{ vehicle.brand }} {{ vehicle.model }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="date">التاريخ</label>
+                                    <input type="date" class="form-control" id="date" name="date" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quantity">الكمية (لتر)</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="cost">التكلفة</label>
+                                    <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="fuel_type">نوع الوقود</label>
+                                    <select class="form-control" id="fuel_type" name="fuel_type" required>
+                                        <option value="">اختر نوع الوقود</option>
+                                        <option value="petrol">بنزين</option>
+                                        <option value="diesel">ديزل</option>
+                                        <option value="gas">غاز</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="station">محطة الوقود</label>
+                                    <input type="text" class="form-control" id="station" name="station">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="notes">ملاحظات</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">حفظ</button>
+                                <a href="{{ url_for('vehicles.fuel') }}" class="btn btn-secondary">إلغاء</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Set default date to today
+        var today = new Date().toISOString().split('T')[0];
+        $('#date').val(today);
+    });
+</script>
+{% endblock %} 

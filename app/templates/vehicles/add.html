@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}إضافة سيارة{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">إضافة سيارة جديدة</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('vehicles.add_vehicle') }}">
+                        {{ form.csrf_token }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="plate_number">رقم اللوحة</label>
+                                    <input type="text" class="form-control" id="plate_number" name="plate_number" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="type">نوع السيارة</label>
+                                    <select class="form-control" id="type" name="type" required>
+                                        <option value="">اختر نوع السيارة</option>
+                                        <option value="bus">حافلة</option>
+                                        <option value="minibus">حافلة صغيرة</option>
+                                        <option value="car">سيارة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="model">الموديل</label>
+                                    <input type="text" class="form-control" id="model" name="model" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="year">سنة الصنع</label>
+                                    <input type="text" class="form-control" id="year" name="year" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="color">اللون</label>
+                                    <input type="text" class="form-control" id="color" name="color" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="status">الحالة</label>
+                                    <select class="form-control" id="status" name="status" required>
+                                        <option value="active">نشط</option>
+                                        <option value="maintenance">في الصيانة</option>
+                                        <option value="retired">متقاعد</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="purchase_date">تاريخ الاقتناء</label>
+                                    <input type="date" class="form-control" id="purchase_date" name="purchase_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="purchase_price">سعر الاقتناء</label>
+                                    <input type="number" class="form-control" id="purchase_price" name="purchase_price" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="registration_expiry">تاريخ انتهاء رخصة التسجيل</label>
+                                    <input type="date" class="form-control" id="registration_expiry" name="registration_expiry">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="insurance_expiry">تاريخ انتهاء التامين</label>
+                                    <input type="date" class="form-control" id="insurance_expiry" name="insurance_expiry">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspection_expiry">تاريخ انتهاء الفحص التقني</label>
+                                    <input type="date" class="form-control" id="inspection_expiry" name="inspection_expiry">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="driving_license_expiry">تاريخ انتهاء رخصة السير</label>
+                                    <input type="date" class="form-control" id="driving_license_expiry" name="driving_license_expiry">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="current_mileage">الكيلومتراج الحالي</label>
+                                    <input type="number" class="form-control" id="current_mileage" name="current_mileage">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="next_maintenance_mileage">الكيلومتراج القادم للصيانة</label>
+                                    <input type="number" class="form-control" id="next_maintenance_mileage" name="next_maintenance_mileage">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="next_maintenance_type">نوع الصيانة القادمة</label>
+                                    <select class="form-control" id="next_maintenance_type" name="next_maintenance_type">
+                                        <option value="">اختر نوع الصيانة</option>
+                                        <option value="regular">صيانة دورية</option>
+                                        <option value="repair">إصلاح</option>
+                                        <option value="emergency">صيانة طارئة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="notes">ملاحظات</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">إضافة السيارة</button>
+                            <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary">عودة</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Set max year to current year
+        var currentYear = new Date().getFullYear();
+        $('#year').attr('max', currentYear);
+    });
+</script>
+{% endblock %} 

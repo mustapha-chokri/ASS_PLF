@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">إدارة قاعدة البيانات</h2>
+
+    <div class="row">
+        <!-- معلومات قاعدة البيانات -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">معلومات قاعدة البيانات</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>حجم قاعدة البيانات:</th>
+                            <td>{{ db_info.size }}</td>
+                        </tr>
+                        <tr>
+                            <th>عدد الجداول:</th>
+                            <td>{{ db_info.tables }}</td>
+                        </tr>
+                        <tr>
+                            <th>آخر تحديث:</th>
+                            <td>{{ db_info.last_update }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- النسخ الاحتياطي -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">النسخ الاحتياطي</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('settings.backup_database') }}" class="mb-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>إنشاء نسخة احتياطية
+                        </button>
+                    </form>
+
+                    <h6 class="mb-3">النسخ الاحتياطية المتوفرة:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>اسم الملف</th>
+                                    <th>التاريخ</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for backup in backups %}
+                                <tr>
+                                    <td>{{ backup.filename }}</td>
+                                    <td>{{ backup.date }}</td>
+                                    <td>
+                                        <a href="{{ url_for('settings.download_backup', filename=backup.filename) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">لا توجد نسخ احتياطية</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

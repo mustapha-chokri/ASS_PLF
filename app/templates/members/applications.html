@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">طلبات الانخراط</h1>
+        <div>
+            <a href="{{ url_for('members.add_application') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> إضافة طلب جديد
+            </a>
+            <a href="{{ url_for('members.index') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-arrow-right"></i> العودة إلى قائمة المنخرطين
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة طلبات الانخراط</h6>
+            <div>
+                <input type="text" id="applicationSearch" class="form-control form-control-sm" placeholder="بحث...">
+            </div>
+        </div>
+        <div class="card-body">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="applicationsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>الاسم الكامل</th>
+                            <th>رقم البطاقة الوطنية</th>
+                            <th>الهاتف</th>
+                            <th>تاريخ الطلب</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                        <tr>
+                            <td>{{ application.first_name }} {{ application.last_name }}</td>
+                            <td>{{ application.national_id }}</td>
+                            <td>{{ application.phone }}</td>
+                            <td>{{ application.application_date.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                {% if application.status == 'pending' %}
+                                <span class="badge badge-warning">قيد الانتظار</span>
+                                {% elif application.status == 'approved' %}
+                                <span class="badge badge-success">تمت الموافقة</span>
+                                {% else %}
+                                <span class="badge badge-danger">مرفوض</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    {% if application.status == 'pending' %}
+                                    <a href="{{ url_for('members.approve_application', id=application.id) }}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من الموافقة على طلب الانخراط؟');">
+                                        <i class="fas fa-check"></i> موافقة
+                                    </a>
+                                    <form action="{{ url_for('members.reject_application', id=application.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من رفض طلب الانخراط؟');">
+                                            <i class="fas fa-times"></i> رفض
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="fas fa-check"></i> تمت المعالجة
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">لا توجد طلبات انخراط حاليًا.</p>
+                <a href="{{ url_for('members.add_application') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> إضافة طلب جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">إحصائيات الطلبات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                قيد الانتظار</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ applications|selectattr('status', 'equalto', 'pending')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">طلبات مقبولة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                تمت الموافقة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ applications|selectattr('status', 'equalto', 'approved')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">طلبات مرفوضة</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                مرفوضة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ applications|selectattr('status', 'equalto', 'rejected')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $("#applicationSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#applicationsTable tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+</script>
+{% endblock %} 

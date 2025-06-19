@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('members.applications') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+            <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة للطلبات
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">إنشاء رابط جديد لطلب الانخراط</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-link fa-3x text-primary mb-3"></i>
+                        <p>قم بإنشاء رابط فريد يمكنك إرساله إلى الأعضاء المحتملين ليتمكنوا من تقديم طلب الانخراط.</p>
+                    </div>
+
+                    <form method="post" action="{{ url_for('members.create_application_link') }}">
+                        {{ form.csrf_token }}
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i> عند النقر على زر "إنشاء الرابط"، سيتم إنشاء رابط فريد صالح لاستخدام واحد فقط.
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle"></i> إنشاء رابط جديد
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">الروابط المنشأة مسبقاً</h6>
+                    <a href="{{ url_for('members.application_links') }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-list"></i> عرض كل الروابط
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <a href="{{ url_for('members.application_links') }}" class="btn btn-info">
+                            <i class="fas fa-link"></i> إدارة الروابط المنشأة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

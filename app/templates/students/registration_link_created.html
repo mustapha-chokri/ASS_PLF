@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.create_registration_link') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm ml-2">
+                <i class="fas fa-plus fa-sm text-white-50"></i> إنشاء رابط جديد
+            </a>
+            <a href="{{ url_for('students.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة التلاميذ
+            </a>
+        </div>
+    </div>
+
+    <!-- Registration Link Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">رابط التسجيل الجديد</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> تم إنشاء رابط التسجيل بنجاح!
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="font-weight-bold text-primary">معلومات الرابط</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>رمز التسجيل:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ pending.registration_token }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>تاريخ الإنشاء:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ pending.submission_date.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    </div>
+                    
+                    {% if pending.notes %}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>ملاحظات:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ pending.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Link Display -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">رابط التسجيل</h6>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="registration-link" value="{{ registration_url }}" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" onclick="copyLink()">
+                                <i class="fas fa-copy"></i> نسخ
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p class="mb-2"><strong>طرق مشاركة الرابط:</strong></p>
+                        
+                        <!-- WhatsApp Share -->
+                        <a href="https://api.whatsapp.com/send?text={{ ('رابط تسجيل الطالب الجديد: ' ~ registration_url)|urlencode }}" 
+                           target="_blank" class="btn btn-success mb-2 ml-2">
+                            <i class="fab fa-whatsapp"></i> مشاركة عبر واتساب
+                        </a>
+                        
+                        <!-- Copy to Clipboard -->
+                        <button class="btn btn-info mb-2" type="button" onclick="copyLink()">
+                            <i class="fas fa-copy"></i> نسخ الرابط
+                        </button>
+                        
+                        <!-- QR Code option -->
+                        <button class="btn btn-secondary mb-2" type="button" onclick="showQRCode('{{ registration_url }}')">
+                            <i class="fas fa-qrcode"></i> إنشاء رمز QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Code Modal -->
+            <div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qrCodeModalLabel">رمز QR للرابط</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div id="qrcode"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="alert alert-info">
+                <h6 class="font-weight-bold"><i class="fas fa-info-circle"></i> الخطوات القادمة</h6>
+                <ol>
+                    <li>قم بمشاركة الرابط مع أولياء أمور التلاميذ.</li>
+                    <li>سيقوم ولي الأمر بتعبئة نموذج التسجيل وإرفاق المستندات المطلوبة.</li>
+                    <li>بعد الإرسال، ستظهر طلبات التسجيل الجديدة في <a href="{{ url_for('students.pending_registrations') }}">صفحة طلبات التسجيل المعلقة</a>.</li>
+                    <li>بعد المراجعة، يمكنك الموافقة على الطلب أو رفضه.</li>
+                </ol>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('students.pending_registrations') }}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> عرض طلبات التسجيل المعلقة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+
+<script>
+function copyLink() {
+    var copyText = document.getElementById("registration-link");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+    
+    // Change button text temporarily
+    var button = document.querySelector(".input-group-append button");
+    var originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-success');
+    
+    // Restore button after 2 seconds
+    setTimeout(function() {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+    }, 2000);
+}
+
+function showQRCode(url) {
+    // Clear previous QR code
+    document.getElementById('qrcode').innerHTML = '';
+    
+    // Generate new QR code
+    new QRCode(document.getElementById("qrcode"), {
+        text: url,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Show modal
+    $('#qrCodeModal').modal('show');
+}
+</script>
+{% endblock %} 

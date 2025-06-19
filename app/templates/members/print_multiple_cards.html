@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طباعة بطاقات الانخراط</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Nunito', sans-serif;
+            padding: 20px;
+        }
+        .card-container {
+            width: 85.6mm; /* Credit card width */
+            height: 53.98mm; /* Credit card height */
+            margin: 10px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border: 1px solid #ddd;
+            page-break-inside: avoid;
+            display: inline-block;
+        }
+        .card-header {
+            background-color: #4e73df;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+            height: 40px;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .card-header .association-name {
+            font-size: 12px;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+        .card-body {
+            padding: 10px;
+            display: flex;
+        }
+        .card-photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-left: 10px;
+            border: 2px solid #4e73df;
+        }
+        .card-details {
+            flex: 1;
+            font-size: 10px;
+        }
+        .card-details p {
+            margin: 3px 0;
+        }
+        .card-details .member-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #4e73df;
+            margin-bottom: 5px;
+        }
+        .card-footer {
+            background-color: #f8f9fc;
+            border-top: 1px solid #e3e6f0;
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+        }
+        .card-qr {
+            width: 50px;
+            height: 50px;
+        }
+        .signature {
+            font-style: italic;
+            font-size: 9px;
+            margin-top: 5px;
+        }
+        .cards-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+            }
+            .card-container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin: 5mm;
+            }
+            .print-btn {
+                display: none;
+            }
+            .cards-wrapper {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="text-center mb-3 print-btn">
+        <button onclick="window.print()" class="btn btn-primary">طباعة البطاقات</button>
+        <button onclick="window.close()" class="btn btn-secondary">إغلاق</button>
+    </div>
+
+    {% if members %}
+    <div class="cards-wrapper">
+        {% for member in members %}
+        <div class="card-container">
+            <div class="card-header">
+                <span class="association-name">جمعية تلحاج بوبكر</span>
+                <h5>بطاقة انخراط</h5>
+            </div>
+            <div class="card-body">
+                {% if member.photo_path %}
+                <img src="{{ url_for('static', filename=member.photo_path) }}" class="card-photo" alt="{{ member.full_name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='img/undraw_profile.svg') }}" class="card-photo" alt="{{ member.full_name }}">
+                {% endif %}
+                <div class="card-details">
+                    <div class="member-name">{{ member.full_name }}</div>
+                    <p><strong>رقم الانخراط:</strong> {{ member.registration_number }}</p>
+                    <p><strong>رقم البطاقة الوطنية:</strong> {{ member.national_id }}</p>
+                    <p><strong>تاريخ الانخراط:</strong> {{ member.join_date.strftime('%d-%m-%Y') }}</p>
+                    <p><strong>رقم الهاتف:</strong> {{ member.phone or 'غير محدد' }}</p>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div>
+                    <p>صالحة لغاية: {{ (member.join_date.replace(year=member.join_date.year+5)).strftime('%d-%m-%Y') }}</p>
+                    <div class="signature">توقيع رئيس الجمعية</div>
+                </div>
+                <!-- Placeholder for QR code -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=50x50&data={{ member.registration_number }}" class="card-qr" alt="QR Code">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        لم يتم تحديد أي منخرط لطباعة البطاقات.
+    </div>
+    {% endif %}
+
+    <script>
+        // Auto print on page load
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,766 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">الخزينة</h1>
+        <div>
+            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addTransferModal">
+                <i class="fas fa-exchange-alt"></i> إضافة تحويل
+            </button>
+            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addBankAccountModal">
+                <i class="fas fa-plus"></i> إضافة حساب بنكي
+            </button>
+            <button type="button" class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#addCashBoxModal">
+                <i class="fas fa-plus"></i> إضافة صندوق نقدي
+            </button>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- بطاقات الإحصائيات -->
+    <div class="row">
+        <!-- مجموع المداخيل -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                مجموع المداخيل</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_income|format_currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- مجموع المصاريف -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                مجموع المصاريف</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_expense|format_currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- مجموع الحسابات البنكية -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                مجموع الحسابات البنكية</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_bank_balance|format_currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-university fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- مجموع الصناديق النقدية -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-right-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                مجموع الصناديق النقدية</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_cash_balance|format_currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-cash-register fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- بطاقة الرصيد الكلي -->
+    <div class="row">
+        <div class="col-xl-12 col-md-12 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                الرصيد الكلي للخزينة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ treasury.balance|format_currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول الحسابات البنكية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">الحسابات البنكية</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>اسم البنك</th>
+                            <th>رقم الحساب</th>
+                            <th>الرصيد</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in bank_accounts %}
+                        <tr>
+                            <td>{{ account.bank_name }}</td>
+                            <td>{{ account.account_number }}</td>
+                            <td>{{ account.balance|round(2) }} دم</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editBankAccount({{ account.id }})">تعديل</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBankAccount({{ account.id }})">حذف</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول الصناديق النقدية -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">الصناديق النقدية</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>اسم الصندوق</th>
+                            <th>الرصيد</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for box in cash_boxes %}
+                        <tr>
+                            <td>{{ box.name }}</td>
+                            <td>{{ box.balance|round(2) }} دم</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editCashBox({{ box.id }})">تعديل</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCashBox({{ box.id }})">حذف</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- إجمالي المداخيل -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                إجمالي المداخيل</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_income|round(2) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-arrow-up fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- إجمالي المصاريف -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                إجمالي المصاريف</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_expense|round(2) }} دم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-arrow-down fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم التحويلات -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">التحويلات</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>من</th>
+                            <th>إلى</th>
+                            <th>المبلغ</th>
+                            <th>ملاحظات</th>
+                            <th>المسؤول</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transfer in transfers %}
+                        <tr>
+                            <td>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if transfer.from_type == 'bank_account' %}
+                                    حساب بنكي: {{ transfer.from_bank_account.name }}
+                                {% else %}
+                                    صندوق: {{ transfer.from_cash_box.name }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transfer.to_type == 'bank_account' %}
+                                    حساب بنكي: {{ transfer.to_bank_account.name }}
+                                {% else %}
+                                    صندوق: {{ transfer.to_cash_box.name }}
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f"|format(transfer.amount) }}</td>
+                            <td>{{ transfer.notes }}</td>
+                            <td>{{ transfer.responsible.name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- آخر العمليات -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">آخر العمليات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="operationsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>العملية</th>
+                                    <th>المبلغ</th>
+                                    <th>التاريخ</th>
+                                    <th>النوع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for operation in recent_operations %}
+                                <tr>
+                                    <td>{{ operation.operation }}</td>
+                                    <td>{{ operation.amount|round(2) }} دم</td>
+                                    <td>{{ operation.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if operation.type == 'income' %}
+                                        <span class="badge badge-success">مدخول</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">مصروف</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج إضافة تحويل جديد -->
+<div class="modal fade" id="addTransferModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة تحويل جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('finance.add_transfer') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">المبلغ</label>
+                        <input type="number" step="0.01" class="form-control" name="amount" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">من</label>
+                        <select class="form-select" name="from_type" required>
+                            <option value="">اختر نوع الحساب</option>
+                            <option value="bank_account">حساب بنكي</option>
+                            <option value="cash_box">صندوق</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 from-bank-account" style="display: none;">
+                        <label class="form-label">الحساب البنكي المصدر</label>
+                        <select class="form-select" name="from_bank_account_id">
+                            {% for account in bank_accounts %}
+                            <option value="{{ account.id }}">{{ account.name }} ({{ "%.2f"|format(account.balance) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 from-cash-box" style="display: none;">
+                        <label class="form-label">الصندوق المصدر</label>
+                        <select class="form-select" name="from_cash_box_id">
+                            {% for box in cash_boxes %}
+                            <option value="{{ box.id }}">{{ box.name }} ({{ "%.2f"|format(box.balance) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">إلى</label>
+                        <select class="form-select" name="to_type" required>
+                            <option value="">اختر نوع الحساب</option>
+                            <option value="bank_account">حساب بنكي</option>
+                            <option value="cash_box">صندوق</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 to-bank-account" style="display: none;">
+                        <label class="form-label">الحساب البنكي المستلم</label>
+                        <select class="form-select" name="to_bank_account_id">
+                            {% for account in bank_accounts %}
+                            <option value="{{ account.id }}">{{ account.name }} ({{ "%.2f"|format(account.balance) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 to-cash-box" style="display: none;">
+                        <label class="form-label">الصندوق المستلم</label>
+                        <select class="form-select" name="to_cash_box_id">
+                            {% for box in cash_boxes %}
+                            <option value="{{ box.id }}">{{ box.name }} ({{ "%.2f"|format(box.balance) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">ملاحظات</label>
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إضافة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إضافة حساب بنكي -->
+<div class="modal fade" id="addBankAccountModal" tabindex="-1" aria-labelledby="addBankAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBankAccountModalLabel">إضافة حساب بنكي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addBankAccountForm" action="{{ url_for('finance.add_bank_account') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="bank_name" class="form-label">اسم البنك</label>
+                        <input type="text" class="form-control" id="bank_name" name="bank_name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="account_number" class="form-label">رقم الحساب</label>
+                        <input type="text" class="form-control" id="account_number" name="account_number" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="balance" class="form-label">الرصيد الافتتاحي</label>
+                        <input type="number" step="0.01" class="form-control" id="balance" name="balance" value="0" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="notes" class="form-label">ملاحظات</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إضافة صندوق نقدي -->
+<div class="modal fade" id="addCashBoxModal" tabindex="-1" aria-labelledby="addCashBoxModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCashBoxModalLabel">إضافة صندوق نقدي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addCashBoxForm" action="{{ url_for('finance.add_cash_box') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="name" class="form-label">اسم الصندوق</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="balance" class="form-label">الرصيد الافتتاحي</label>
+                        <input type="number" step="0.01" class="form-control" id="balance" name="balance" value="0" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="notes" class="form-label">ملاحظات</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل حساب بنكي -->
+<div class="modal fade" id="editBankAccountModal" tabindex="-1" aria-labelledby="editBankAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBankAccountModalLabel">تعديل حساب بنكي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editBankAccountForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="edit_bank_name" class="form-label">اسم البنك</label>
+                        <input type="text" class="form-control" id="edit_bank_name" name="bank_name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_account_number" class="form-label">رقم الحساب</label>
+                        <input type="text" class="form-control" id="edit_account_number" name="account_number" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_balance" class="form-label">الرصيد</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_balance" name="balance" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_notes" class="form-label">ملاحظات</label>
+                        <textarea class="form-control" id="edit_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل صندوق نقدي -->
+<div class="modal fade" id="editCashBoxModal" tabindex="-1" aria-labelledby="editCashBoxModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCashBoxModalLabel">تعديل صندوق نقدي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCashBoxForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="edit_name" class="form-label">اسم الصندوق</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_balance" class="form-label">الرصيد</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_balance" name="balance" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit_notes" class="form-label">ملاحظات</label>
+                        <textarea class="form-control" id="edit_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    // التحقق من تحميل jQuery
+    if (typeof jQuery != 'undefined') {
+        console.log('jQuery is loaded');
+    } else {
+        console.error('jQuery is not loaded');
+    }
+
+    // التحقق من تحميل DataTables
+    if (typeof $.fn.DataTable != 'undefined') {
+        console.log('DataTables is loaded');
+    } else {
+        console.error('DataTables is not loaded');
+    }
+
+    // تهيئة الجداول
+    try {
+        const arabicTranslation = {
+            "emptyTable": "لا توجد بيانات متاحة في الجدول",
+            "info": "عرض _START_ إلى _END_ من _TOTAL_ سجل",
+            "infoEmpty": "عرض 0 إلى 0 من 0 سجل",
+            "infoFiltered": "(منتقاة من مجموع _MAX_ سجل)",
+            "infoPostFix": "",
+            "lengthMenu": "عرض _MENU_ سجل",
+            "loadingRecords": "جاري التحميل...",
+            "processing": "جاري المعالجة...",
+            "search": "بحث:",
+            "zeroRecords": "لم يتم العثور على سجلات متطابقة",
+            "paginate": {
+                "first": "الأول",
+                "last": "الأخير",
+                "next": "التالي",
+                "previous": "السابق"
+            },
+            "aria": {
+                "sortAscending": ": تفعيل لترتيب العمود تصاعدياً",
+                "sortDescending": ": تفعيل لترتيب العمود تنازلياً"
+            }
+        };
+
+        $('#operationsTable').DataTable({
+            "language": arabicTranslation
+        });
+    } catch (error) {
+        console.error('Error initializing DataTables:', error);
+    }
+
+    // التحكم في ظهور حقول الحساب المصدر
+    const fromTypeSelect = document.querySelector('select[name="from_type"]');
+    const fromBankAccount = document.querySelector('.from-bank-account');
+    const fromCashBox = document.querySelector('.from-cash-box');
+    
+    fromTypeSelect.addEventListener('change', function() {
+        if (this.value === 'bank_account') {
+            fromBankAccount.style.display = 'block';
+            fromCashBox.style.display = 'none';
+        } else if (this.value === 'cash_box') {
+            fromBankAccount.style.display = 'none';
+            fromCashBox.style.display = 'block';
+        } else {
+            fromBankAccount.style.display = 'none';
+            fromCashBox.style.display = 'none';
+        }
+    });
+    
+    // التحكم في ظهور حقول الحساب المستلم
+    const toTypeSelect = document.querySelector('select[name="to_type"]');
+    const toBankAccount = document.querySelector('.to-bank-account');
+    const toCashBox = document.querySelector('.to-cash-box');
+    
+    toTypeSelect.addEventListener('change', function() {
+        if (this.value === 'bank_account') {
+            toBankAccount.style.display = 'block';
+            toCashBox.style.display = 'none';
+        } else if (this.value === 'cash_box') {
+            toBankAccount.style.display = 'none';
+            toCashBox.style.display = 'block';
+        } else {
+            toBankAccount.style.display = 'none';
+            toCashBox.style.display = 'none';
+        }
+    });
+});
+
+// دالة تعديل حساب بنكي
+function editBankAccount(id) {
+    fetch(`/finance/bank_account/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit_bank_name').value = data.bank_name;
+            document.getElementById('edit_account_number').value = data.account_number;
+            document.getElementById('edit_balance').value = data.balance;
+            document.getElementById('edit_notes').value = data.notes;
+            
+            const form = document.getElementById('editBankAccountForm');
+            form.action = `/finance/edit_bank_account/${id}`;
+            
+            // إضافة معالج تقديم النموذج
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تحديث الحساب البنكي');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحديث الحساب البنكي');
+                });
+            };
+            
+            const modal = new bootstrap.Modal(document.getElementById('editBankAccountModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء جلب بيانات الحساب البنكي');
+        });
+}
+
+// دالة حذف حساب بنكي
+function deleteBankAccount(id) {
+    if (confirm('هل أنت متأكد من حذف هذا الحساب البنكي؟')) {
+        fetch(`/finance/bank_account/${id}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء حذف الحساب البنكي');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف الحساب البنكي');
+        });
+    }
+}
+
+// دالة تعديل صندوق نقدي
+function editCashBox(id) {
+    fetch(`/finance/cash_box/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit_name').value = data.name;
+            document.getElementById('edit_balance').value = data.balance;
+            document.getElementById('edit_notes').value = data.notes;
+            
+            const form = document.getElementById('editCashBoxForm');
+            form.action = `/finance/edit_cash_box/${id}`;
+            
+            // إضافة معالج تقديم النموذج
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تحديث الصندوق النقدي');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحديث الصندوق النقدي');
+                });
+            };
+            
+            const modal = new bootstrap.Modal(document.getElementById('editCashBoxModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء جلب بيانات الصندوق النقدي');
+        });
+}
+
+// دالة حذف صندوق نقدي
+function deleteCashBox(id) {
+    if (confirm('هل أنت متأكد من حذف هذا الصندوق النقدي؟')) {
+        fetch(`/finance/cash_box/${id}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء حذف الصندوق النقدي');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حذف الصندوق النقدي');
+        });
+    }
+}
+</script>
+{% endblock %} 

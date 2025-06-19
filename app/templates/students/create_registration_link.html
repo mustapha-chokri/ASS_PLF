@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('students.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة التلاميذ
+        </a>
+    </div>
+
+    <!-- Registration Link Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">إنشاء رابط تسجيل جديد</h6>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">
+                أنشئ رابطاً عاماً للتسجيل يمكن مشاركته مع أولياء الأمور لتسجيل أبنائهم.
+            </p>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> سيتم إنشاء رابط تسجيل عام يمكن استخدامه من قبل أي شخص لتسجيل طالب جديد.
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="row">
+                    <!-- Notes -->
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            {{ form.notes.label(class="form-control-label") }}
+                            {% if form.notes.errors %}
+                                {{ form.notes(class="form-control is-invalid", rows=5) }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.notes.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.notes(class="form-control", rows=5) }}
+                            {% endif %}
+                            <small class="form-text text-muted">ملاحظات داخلية (لن تظهر لولي الأمر)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('students.index') }}" class="btn btn-secondary">إلغاء</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

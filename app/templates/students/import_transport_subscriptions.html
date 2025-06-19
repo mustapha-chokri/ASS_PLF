@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.download_transport_subscriptions_template') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm ml-2">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> تنزيل قالب Excel
+            </a>
+            <a href="{{ url_for('students.transport_subscriptions') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة الاشتراكات
+            </a>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">استيراد اشتراكات النقل من ملف Excel</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="alert alert-info" role="alert">
+                            <h4 class="alert-heading mb-3"><i class="fas fa-info-circle"></i> تعليمات</h4>
+                            <p>لاستيراد اشتراكات النقل بشكل صحيح، يرجى اتباع الخطوات التالية:</p>
+                            <ol>
+                                <li>قم بتنزيل قالب Excel باستخدام الزر أعلاه.</li>
+                                <li>قم بتعبئة بيانات الاشتراكات في الملف بدون تغيير أسماء الأعمدة.</li>
+                                <li>تأكد من أرقام التلاميذ موجودة بالفعل في النظام.</li>
+                                <li>تأكد من صحة تنسيق البيانات:</li>
+                                <ul>
+                                    <li>رقم التلميذ: يجب أن يكون موجوداً في النظام.</li>
+                                    <li>الشهر: رقم من 1 إلى 12.</li>
+                                    <li>السنة: السنة الحالية أو القريبة.</li>
+                                    <li>المبلغ: القيمة بالدرهم.</li>
+                                    <li>تاريخ الدفع: بصيغة YYYY-MM-DD.</li>
+                                    <li>طريقة الدفع: نقداً، تحويل بنكي، أو شيك.</li>
+                                </ul>
+                            </ol>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="excel_file">{{ form.excel_file.label }} *</label>
+                            {{ form.excel_file(class="form-control-file") }}
+                            {% if form.excel_file.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.excel_file.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">يجب أن يكون الملف بصيغة Excel (.xlsx, .xls)</small>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-file-import"></i> {{ form.submit.label.text }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

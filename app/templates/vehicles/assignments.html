@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('vehicles.add_assignment') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> إضافة مهمة جديدة
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Active Assignments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                المهام النشطة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="active-assignments">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Assignments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                المهام المكتملة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="completed-assignments">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancelled Assignments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                المهام الملغاة</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cancelled-assignments">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignments Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة المهام</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="assignmentsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>السيارة</th>
+                            <th>السائق</th>
+                            <th>نوع المهمة</th>
+                            <th>تاريخ البداية</th>
+                            <th>تاريخ النهاية</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.vehicle.registration_number }}</td>
+                            <td>{{ assignment.driver.full_name }}</td>
+                            <td>{{ assignment.assignment_type }}</td>
+                            <td>{{ assignment.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ assignment.end_date.strftime('%Y-%m-%d') if assignment.end_date else '-' }}</td>
+                            <td>
+                                {% if assignment.status == 'active' %}
+                                <span class="badge bg-success">نشط</span>
+                                {% elif assignment.status == 'completed' %}
+                                <span class="badge bg-info">مكتمل</span>
+                                {% else %}
+                                <span class="badge bg-danger">ملغي</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('vehicles.edit_assignment', id=assignment.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('vehicles.delete_assignment', id=assignment.id) }}" method="post" class="d-inline"
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذه المهمة؟');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#assignmentsTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+            }
+        });
+
+        // Load assignment status statistics
+        $.getJSON("{{ url_for('vehicles.assignment_status') }}", function(data) {
+            $('#active-assignments').text(data.active);
+            $('#completed-assignments').text(data.completed);
+            $('#cancelled-assignments').text(data.cancelled);
+        });
+    });
+</script>
+{% endblock %} 

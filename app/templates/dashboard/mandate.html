@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-primary">فترات الانتداب</h2>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('dashboard.add_mandate') }}" class="btn btn-success">
+            <i class="fas fa-plus"></i> إضافة فترة
+        </a>
+        {% endif %}
+    </div>
+    <div class="row">
+        {% for mandate in mandates %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ mandate.title }}</h5>
+                    <p class="mb-1"><strong>من:</strong> {{ mandate.start_date }} <strong>إلى:</strong> {{ mandate.end_date }}</p>
+                    <p class="mb-2">{{ mandate.description or '-' }}</p>
+                    <div class="d-flex justify-content-end gap-2">
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('dashboard.edit_mandate', mandate_id=mandate.id) }}" class="btn btn-outline-warning btn-sm"><i class="fas fa-edit"></i> تعديل</a>
+                        <form method="POST" action="{{ url_for('dashboard.delete_mandate', mandate_id=mandate.id) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذه الفترة؟');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+                        </form>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary btn-sm" onclick="printCard('mandate-{{ mandate.id }}')"><i class="fas fa-print"></i> طباعة</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+function printCard(cardId) {
+    window.print();
+}
+</script>
+{% endblock %} 

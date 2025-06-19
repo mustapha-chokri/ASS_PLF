@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('vehicles.add_driver') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> إضافة سائق جديد
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Active Drivers Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                السائقين النشطين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="active-drivers">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inactive Drivers Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                السائقين غير النشطين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="inactive-drivers">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-slash fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suspended Drivers Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                السائقين المعلقين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="suspended-drivers">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-lock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drivers Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة السائقين</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="driversTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>الاسم الكامل</th>
+                            <th>رقم الهوية</th>
+                            <th>رقم الرخصة</th>
+                            <th>تاريخ انتهاء الرخصة</th>
+                            <th>رقم الهاتف</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for driver in drivers %}
+                        <tr>
+                            <td>{{ driver.full_name }}</td>
+                            <td>{{ driver.national_id }}</td>
+                            <td>{{ driver.license_number }}</td>
+                            <td>{{ driver.license_expiry.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ driver.phone }}</td>
+                            <td>
+                                {% if driver.status == 'active' %}
+                                <span class="badge bg-success">نشط</span>
+                                {% elif driver.status == 'inactive' %}
+                                <span class="badge bg-warning">غير نشط</span>
+                                {% else %}
+                                <span class="badge bg-danger">معلق</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('vehicles.edit_driver', id=driver.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('vehicles.delete_driver', id=driver.id) }}" method="post" class="d-inline"
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا السائق؟');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#driversTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+            }
+        });
+
+        // Load driver status statistics
+        $.getJSON("{{ url_for('vehicles.driver_status') }}", function(data) {
+            $('#active-drivers').text(data.active);
+            $('#inactive-drivers').text(data.inactive);
+            $('#suspended-drivers').text(data.suspended);
+        });
+    });
+</script>
+{% endblock %} 

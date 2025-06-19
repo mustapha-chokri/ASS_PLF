@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('vehicles.assignments') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة المهام
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">بيانات المهمة</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('vehicles.add_assignment') }}">
+                        {{ form.csrf_token }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="vehicle_id">السيارة</label>
+                                    <select class="form-control" id="vehicle_id" name="vehicle_id" required>
+                                        <option value="">اختر السيارة</option>
+                                        {% for vehicle in vehicles %}
+                                        <option value="{{ vehicle.id }}">{{ vehicle.registration_number }} - {{ vehicle.brand }} {{ vehicle.model }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="driver_id">السائق</label>
+                                    <select class="form-control" id="driver_id" name="driver_id" required>
+                                        <option value="">اختر السائق</option>
+                                        {% for driver in drivers %}
+                                        <option value="{{ driver.id }}">{{ driver.full_name }} - {{ driver.license_number }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="assignment_type">نوع المهمة</label>
+                                    <select class="form-control" id="assignment_type" name="assignment_type" required>
+                                        <option value="">اختر نوع المهمة</option>
+                                        <option value="regular">مهمة منتظمة</option>
+                                        <option value="special">مهمة خاصة</option>
+                                        <option value="emergency">مهمة طارئة</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="status">الحالة</label>
+                                    <select class="form-control" id="status" name="status" required>
+                                        <option value="active">نشط</option>
+                                        <option value="completed">مكتمل</option>
+                                        <option value="cancelled">ملغي</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="start_date">تاريخ البداية</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="end_date">تاريخ النهاية</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="description">وصف المهمة</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="notes">ملاحظات</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">حفظ</button>
+                                <a href="{{ url_for('vehicles.assignments') }}" class="btn btn-secondary">إلغاء</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Set default start date to today
+        var today = new Date().toISOString().split('T')[0];
+        $('#start_date').val(today);
+
+        // Validate end date
+        $('#end_date').change(function() {
+            var startDate = new Date($('#start_date').val());
+            var endDate = new Date($(this).val());
+            
+            if (endDate < startDate) {
+                alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
+                $(this).val('');
+            }
+        });
+    });
+</script>
+{% endblock %} 

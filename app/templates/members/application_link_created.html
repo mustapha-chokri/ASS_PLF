@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('members.create_application_link') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> إنشاء رابط جديد
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4 border-left-success">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">تم إنشاء الرابط بنجاح</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5>تم إنشاء رابط طلب الانخراط بنجاح!</h5>
+                        <p>يمكنك الآن نسخ الرابط أدناه وإرساله إلى المنخرط المحتمل.</p>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i> هذا الرابط صالح لاستخدام واحد فقط. يرجى عدم مشاركته مع أكثر من شخص.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicationLink" class="font-weight-bold">رابط طلب الانخراط:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="applicationLink" value="{{ application_link }}" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary" type="button" onclick="copyLink()">
+                                    <i class="fas fa-copy"></i> نسخ
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted">انقر على زر النسخ لنسخ الرابط إلى الحافظة.</small>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <div class="btn-group">
+                            <a href="{{ url_for('members.create_application_link') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> إنشاء رابط آخر
+                            </a>
+                            <a href="{{ url_for('members.application_links') }}" class="btn btn-info">
+                                <i class="fas fa-list"></i> عرض جميع الروابط
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyLink() {
+    var linkInput = document.getElementById("applicationLink");
+    linkInput.select();
+    document.execCommand("copy");
+    
+    // Show success message
+    var button = linkInput.nextElementSibling.querySelector('button');
+    var originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+    button.classList.remove('btn-outline-primary');
+    button.classList.add('btn-success');
+    
+    setTimeout(function() {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-primary');
+    }, 2000);
+}
+</script>
+{% endblock %} 

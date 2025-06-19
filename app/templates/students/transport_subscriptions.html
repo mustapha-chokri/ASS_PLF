@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.export_subscriptions_excel') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm ml-2">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> تصدير للإكسل
+            </a>
+            <a href="{{ url_for('students.import_transport_subscriptions') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm ml-2">
+                <i class="fas fa-file-import fa-sm text-white-50"></i> استيراد من إكسل
+            </a>
+            <a href="{{ url_for('students.add_transport_subscription') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> إضافة اشتراك جديد
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Monthly Subscriptions Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                عدد اشتراكات شهر {{ current_month }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monthly_subscriptions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Amount Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                مجموع المبالغ المحصلة لشهر {{ current_month }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monthly_amount }} درهم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Year Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                السنة الحالية
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ current_year }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtered Results Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                نتائج التصفية ({{ filtered_count }})
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ filtered_amount }} درهم</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-filter fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">بحث وتصفية</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('students.transport_subscriptions') }}" id="filterForm">
+                <div class="row">
+                    <!-- Search Box -->
+                    <div class="col-md-4 mb-3">
+                        <label for="search">بحث (رقم التلميذ أو الاسم)</label>
+                        <input type="text" class="form-control" id="search" name="search" value="{{ search_query }}">
+                    </div>
+                    
+                    <!-- Month Filter -->
+                    <div class="col-md-2 mb-3">
+                        <label for="month">الشهر</label>
+                        <select class="form-control" id="month" name="month">
+                            <option value="">الكل</option>
+                            {% for month_num, month_name in month_names.items() %}
+                                <option value="{{ month_num }}" {% if month_filter == month_num %}selected{% endif %}>{{ month_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Year Filter -->
+                    <div class="col-md-2 mb-3">
+                        <label for="year">السنة</label>
+                        <select class="form-control" id="year" name="year">
+                            <option value="">الكل</option>
+                            {% for year in years %}
+                                <option value="{{ year }}" {% if year_filter == year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Educational Level Filter -->
+                    <div class="col-md-2 mb-3">
+                        <label for="level">المستوى الدراسي</label>
+                        <select class="form-control" id="level" name="level">
+                            <option value="">الكل</option>
+                            {% for level in educational_levels %}
+                                <option value="{{ level }}" {% if level_filter == level %}selected{% endif %}>{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Payment Method Filter -->
+                    <div class="col-md-2 mb-3">
+                        <label for="payment_method">طريقة الدفع</label>
+                        <select class="form-control" id="payment_method" name="payment_method">
+                            <option value="">الكل</option>
+                            <option value="cash" {% if payment_method_filter == 'cash' %}selected{% endif %}>نقداً</option>
+                            <option value="bank_transfer" {% if payment_method_filter == 'bank_transfer' %}selected{% endif %}>تحويل بنكي</option>
+                            <option value="check" {% if payment_method_filter == 'check' %}selected{% endif %}>شيك</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">تطبيق التصفية</button>
+                        <a href="{{ url_for('students.transport_subscriptions') }}" class="btn btn-secondary">إعادة تعيين</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subscriptions List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة اشتراكات النقل المدرسي</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>رقم التلميذ</th>
+                            <th>اسم التلميذ</th>
+                            <th>المستوى الدراسي</th>
+                            <th>الشهر</th>
+                            <th>السنة</th>
+                            <th>المبلغ</th>
+                            <th>تاريخ الدفع</th>
+                            <th>طريقة الدفع</th>
+                            <th>رقم الإيصال</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subscription in subscriptions %}
+                        <tr>
+                            <td>{{ subscription.student.student_id }}</td>
+                            <td>{{ subscription.student.full_name }}</td>
+                            <td>{{ subscription.student.educational_level }}</td>
+                            <td>{{ month_names[subscription.month] }}</td>
+                            <td>{{ subscription.year }}</td>
+                            <td>{{ subscription.amount }} درهم</td>
+                            <td>{{ subscription.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if subscription.payment_method == 'cash' %}
+                                نقداً
+                                {% elif subscription.payment_method == 'bank_transfer' %}
+                                تحويل بنكي
+                                {% elif subscription.payment_method == 'check' %}
+                                شيك
+                                {% else %}
+                                {{ subscription.payment_method }}
+                                {% endif %}
+                            </td>
+                            <td>{{ subscription.receipt_number or '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('students.print_receipt', id=subscription.id) }}" target="_blank" class="btn btn-info btn-sm">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{{ url_for('students.edit_transport_subscription', id=subscription.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('students.view', id=subscription.student.id) }}" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form action="{{ url_for('students.delete_transport_subscription', id=subscription.id) }}" method="post" class="d-inline" 
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا الاشتراك؟')">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable with server-side processing disabled
+        // Since we're using our own filter form
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Arabic.json"
+            },
+            "order": [[6, "desc"]],
+            "searching": false, // Disable built-in search as we have our own
+            "paging": true,
+            "lengthChange": true
+        });
+        
+        // Auto-submit form when a select filter changes
+        $('#month, #year, #level, #payment_method').change(function() {
+            $('#filterForm').submit();
+        });
+    });
+</script>
+{% endblock %} 

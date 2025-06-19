@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">ممتلكات الجمعية</h1>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-right"></i> العودة إلى لوحة التحكم
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">العقارات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>الوصف</th>
+                                    <th>العنوان</th>
+                                    <th>القيمة التقديرية</th>
+                                    <th>تاريخ الحصول</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>مقر الجمعية</td>
+                                    <td>قرية تلحاج بوبكر، دائرة بوحنيفية، ولاية معسكر</td>
+                                    <td>1,200,000 دج</td>
+                                    <td>12-06-2010</td>
+                                </tr>
+                                <tr>
+                                    <td>قاعة متعددة الاستخدامات</td>
+                                    <td>قرية تلحاج بوبكر، دائرة بوحنيفية، ولاية معسكر</td>
+                                    <td>800,000 دج</td>
+                                    <td>23-03-2018</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">المنقولات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>الوصف</th>
+                                    <th>الكمية</th>
+                                    <th>الحالة</th>
+                                    <th>القيمة التقديرية</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>حواسيب محمولة</td>
+                                    <td>3</td>
+                                    <td>جيدة</td>
+                                    <td>180,000 دج</td>
+                                </tr>
+                                <tr>
+                                    <td>طابعات</td>
+                                    <td>2</td>
+                                    <td>جيدة</td>
+                                    <td>45,000 دج</td>
+                                </tr>
+                                <tr>
+                                    <td>آلة تصوير</td>
+                                    <td>1</td>
+                                    <td>متوسطة</td>
+                                    <td>60,000 دج</td>
+                                </tr>
+                                <tr>
+                                    <td>أثاث مكتبي</td>
+                                    <td>10</td>
+                                    <td>جيدة</td>
+                                    <td>120,000 دج</td>
+                                </tr>
+                                <tr>
+                                    <td>خزائن</td>
+                                    <td>4</td>
+                                    <td>جيدة</td>
+                                    <td>80,000 دج</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">وثائق الملكية</h6>
+                </div>
+                <div class="card-body">
+                    <p>تمتلك الجمعية الوثائق التالية:</p>
+                    <ul>
+                        <li>عقد ملكية مقر الجمعية رقم 123/2010 بتاريخ 12/06/2010</li>
+                        <li>وثيقة استلام قاعة متعددة الاستخدامات رقم 45/2018 بتاريخ 23/03/2018</li>
+                        <li>فواتير شراء التجهيزات المنقولة محفوظة لدى أمين المال</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-download"></i> تحميل جرد الممتلكات
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

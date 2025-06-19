@@ -1,0 +1,438 @@
+/* General Styles */
+html, body {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+body {
+    background-color: #f5f5f5;
+}
+
+/* Wrapper */
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styles - إخفاء تام افتراضي */
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    background-color: #343a40;
+    /* إخفاء القائمة الجانبية افتراضياً على جميع الأحجام */
+    margin-right: -250px !important;
+    transform: translateX(250px) !important;
+    /* إضافة قواعد إضافية لضمان الإخفاء */
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+#sidebar.active {
+    /* إظهار القائمة الجانبية عند إزالة الكلاس active */
+    margin-right: 0 !important;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+#sidebar .sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+#sidebar ul li a {
+    padding: 10px 20px;
+    display: block;
+    text-decoration: none;
+    transition: all 0.3s;
+    color: #fff;
+}
+
+#sidebar ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+#sidebar ul ul a {
+    padding-right: 40px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Content Styles */
+#content {
+    width: 100% !important;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+    /* توسيع المحتوى ليملأ الشاشة افتراضياً */
+    margin-right: 0px !important;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+#content.active {
+    /* تقليل عرض المحتوى عند إظهار القائمة الجانبية */
+    margin-right: 250px !important;
+    width: calc(100% - 250px) !important;
+}
+
+/* Responsive sidebar - إخفاء القائمة الجانبية تلقائياً */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-right: -250px !important;
+        transform: translateX(250px) !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    #sidebar.active {
+        margin-right: 0 !important;
+        transform: translateX(0) !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    #content {
+        margin-right: 0 !important;
+        width: 100% !important;
+        padding: 15px;
+    }
+    
+    #content.active {
+        margin-right: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* إخفاء القائمة الجانبية عند الضغط على أي قسم */
+.sidebar-hidden #sidebar {
+    margin-right: -250px;
+    transform: translateX(250px);
+}
+
+.sidebar-hidden #content {
+    margin-right: 0;
+    width: 100%;
+}
+
+/* For login page (no sidebar) */
+#content.with-sidebar {
+    padding: 20px;
+    margin-right: 0;
+    width: 100%;
+}
+
+/* Card and form styling */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 20px;
+}
+
+/* Dashboard stats */
+.stat-card {
+    border-right: 5px solid;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card-primary {
+    border-color: #007bff;
+}
+
+.stat-card-success {
+    border-color: #28a745;
+}
+
+.stat-card-warning {
+    border-color: #ffc107;
+}
+
+.stat-card-info {
+    border-color: #17a2b8;
+}
+
+/* Tables */
+.table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+}
+
+/* إضافة هذا لضمان أن الجدول لا يكون عريضًا جدًا */
+#dataTable {
+    min-width: 100%;
+    width: 100%;
+    font-size: 0.92rem;
+}
+
+/* Member card */
+.member-card {
+    transition: transform 0.2s;
+}
+
+.member-card:hover {
+    transform: scale(1.03);
+}
+
+/* Fix spacing for buttons in RTL layout */
+.ml-2 {
+    margin-right: 0.5rem !important;
+    margin-left: 0 !important;
+}
+
+.mr-2 {
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+}
+
+/* معالجة أزرار Bootstrap 5 في RTL */
+.me-1, .me-2, .me-3 {
+    margin-left: 0.25rem !important;
+    margin-right: 0 !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 0.25rem !important;
+    margin-left: 0 !important;
+}
+
+/* Custom checkbox styles - fix for Bootstrap 5 and RTL */
+.custom-control {
+    position: relative;
+    display: block;
+    min-height: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.custom-control-input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+}
+
+.custom-control-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+    cursor: pointer;
+}
+
+.custom-control-label::before {
+    position: absolute;
+    top: 0.25rem;
+    right: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    content: "";
+    background-color: #fff;
+    border: 1px solid #adb5bd;
+    border-radius: 0.25rem;
+}
+
+.custom-control-label::after {
+    position: absolute;
+    top: 0.25rem;
+    right: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    content: "";
+    background: no-repeat 50%/50% 50%;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color: #4e73df;
+    background-color: #4e73df;
+}
+
+.custom-checkbox .custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+/* إصلاح مربع الاختيار في Bootstrap 5 */
+.form-check {
+    padding-right: 1.5em !important;
+    padding-left: 0 !important;
+}
+
+.form-check .form-check-input {
+    float: right !important;
+    margin-right: -1.5em !important;
+    margin-left: 0 !important;
+}
+
+.form-check-input:checked {
+    background-color: #4e73df !important;
+    border-color: #4e73df !important;
+}
+
+/* DataTables RTL fixes */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    float: none;
+    text-align: start;
+}
+
+.dataTables_wrapper .dataTables_info {
+    clear: both;
+    float: right;
+    padding-top: 0.755em;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    float: left;
+    text-align: left;
+    padding-top: 0.25em;
+}
+
+/* تصليح الأزرار وأحجامها والمسافات بينها */
+.btn-group > .btn {
+    margin-left: 1px;
+}
+
+/* إصلاح أزرار الإجراءات الجماعية */
+.bulk-actions .btn {
+    margin: 0 2px 5px 2px !important;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .bulk-actions .btn {
+        width: 100%;
+    }
+}
+
+/* تحسين ظهور الأزرار في مجموعات الأزرار */
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* تحسينات إضافية لجعل الصفحة تأخذ كامل الحجم */
+.container-fluid, .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+    background: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* عمود الإجراءات */
+#dataTable th:last-child,
+#dataTable td:last-child {
+    min-width: 60px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+}
+
+/* شبكة الأزرار الفردية 3x2 بحجم صغير */
+.btn-group.student-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    min-width: 60px;
+    width: 60px;
+    height: 40px;
+    justify-items: stretch;
+    align-items: stretch;
+    background: none;
+}
+.btn-group.student-actions .btn {
+    width: 100% !important;
+    height: 18px !important;
+    padding: 0 !important;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* تحسين استجابة الجدول في الشاشات الصغيرة */
+@media (max-width: 1200px) {
+    .container-fluid, .container {
+        padding-right: 15px !important;
+        padding-left: 15px !important;
+    }
+    #dataTable {
+        font-size: 0.85rem;
+    }
+    .btn-group.student-actions {
+        min-width: 48px;
+        width: 48px;
+        height: 32px;
+    }
+    #dataTable th:last-child,
+    #dataTable td:last-child {
+        min-width: 48px !important;
+        width: 48px !important;
+        max-width: 48px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-fluid, .container {
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+    }
+    #content {
+        padding: 15px;
+    }
+    .card {
+        margin-bottom: 15px;
+    }
+}
+
+body, html {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #f5f5f5;
+    overflow-x: hidden;
+} 

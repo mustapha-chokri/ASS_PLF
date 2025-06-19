@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}التقارير{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">التقارير المالية</h3>
+                </div>
+                <div class="card-body">
+                    <p>يمكنك إنشاء وتصفح التقارير المالية المختلفة مثل:</p>
+                    <ul>
+                        <li>تقارير الإيرادات</li>
+                        <li>تقارير المصروفات</li>
+                        <li>تقارير الميزانية</li>
+                        <li>تقارير التدفق النقدي</li>
+                        <li>تقارير الأرباح والخسائر</li>
+                    </ul>
+                    <a href="{{ url_for('reports.financial') }}" class="btn btn-primary">
+                        الذهاب إلى التقارير المالية
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">التقارير الأدبية</h3>
+                </div>
+                <div class="card-body">
+                    <p>يمكنك إنشاء وتصفح التقارير الأدبية المختلفة مثل:</p>
+                    <ul>
+                        <li>تقارير الأنشطة</li>
+                        <li>تقارير الفعاليات</li>
+                        <li>تقارير الدورات</li>
+                        <li>تقارير الإنجازات</li>
+                        <li>تقارير المشاركين</li>
+                    </ul>
+                    <a href="{{ url_for('reports.literary') }}" class="btn btn-primary">
+                        الذهاب إلى التقارير الأدبية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">آخر التقارير</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>العنوان</th>
+                                    <th>نوع التقرير</th>
+                                    <th>تاريخ الإنشاء</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.title }}</td>
+                                    <td>{{ report.report_type }}</td>
+                                    <td>{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if report.status == 'pending' %}
+                                        <span class="badge badge-warning">قيد الانتظار</span>
+                                        {% elif report.status == 'completed' %}
+                                        <span class="badge badge-success">مكتمل</span>
+                                        {% elif report.status == 'failed' %}
+                                        <span class="badge badge-danger">فشل</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if report.status == 'completed' %}
+                                        <a href="{{ url_for('reports.download_report', report_id=report.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-download"></i> تحميل
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

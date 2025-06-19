@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - جمعية دعم التمدرس</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Google Fonts - Cairo -->
+    <link href="https://fonts.googleapis.com/css?family=Cairo:400,700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .registration-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        .logo-placeholder {
+            background-color: #4e73df;
+            color: white;
+            font-size: 3rem;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            background: linear-gradient(45deg, #4e73df, #224abe);
+            color: white;
+            font-weight: bold;
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        .form-control {
+            border-radius: 5px;
+            padding: 10px;
+            border: 1px solid #d1d3e2;
+        }
+        
+        .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4e73df, #224abe);
+            border: none;
+            box-shadow: 0 4px 10px rgba(78, 115, 223, 0.4);
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(78, 115, 223, 0.5);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #5a5c69;
+            margin-bottom: 8px;
+        }
+        
+        .section-title {
+            color: #4e73df;
+            border-bottom: 2px solid #4e73df;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .registration-footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .alert {
+            border-radius: 5px;
+            border-left: 4px solid transparent;
+        }
+        
+        .alert-info {
+            border-left-color: #36b9cc;
+            background-color: rgba(54, 185, 204, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <!-- Logo and Header -->
+        <div class="logo-container">
+            <div class="logo-placeholder">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2 class="mt-3">جمعية دعم التمدرس</h2>
+            <p class="lead">نموذج تسجيل تلميذ جديد</p>
+        </div>
+        
+        <!-- Registration Form -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold">تسجيل تلميذ جديد</h5>
+            </div>
+            <div class="card-body">
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    {{ form.token }}
+                    
+                    <h5 class="section-title"><i class="fas fa-user me-2"></i>معلومات التلميذ</h5>
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.first_name.label(class="form-label") }}
+                                {% if form.first_name.errors %}
+                                    {{ form.first_name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.first_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.first_name(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.last_name.label(class="form-label") }}
+                                {% if form.last_name.errors %}
+                                    {{ form.last_name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.last_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.last_name(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Gender -->
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.gender.label(class="form-label") }}
+                                {% if form.gender.errors %}
+                                    {{ form.gender(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.gender.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.gender(class="form-select") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Birth Date -->
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.birth_date.label(class="form-label") }}
+                                {% if form.birth_date.errors %}
+                                    {{ form.birth_date(class="form-control is-invalid", type="date") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.birth_date.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.birth_date(class="form-control", type="date") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Massar Number -->
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.massar_number.label(class="form-label") }}
+                                {% if form.massar_number.errors %}
+                                    {{ form.massar_number(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.massar_number.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.massar_number(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Educational Level -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.educational_level.label(class="form-label") }}
+                                {% if form.educational_level.errors %}
+                                    {{ form.educational_level(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.educational_level.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.educational_level(class="form-select") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Institution -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.institution.label(class="form-label") }}
+                                {% if form.institution.errors %}
+                                    {{ form.institution(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.institution.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.institution(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    <h5 class="section-title"><i class="fas fa-user-shield me-2"></i>معلومات ولي الأمر</h5>
+                    
+                    <div class="row">
+                        <!-- Guardian Name -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_name.label(class="form-label") }}
+                                {% if form.guardian_name.errors %}
+                                    {{ form.guardian_name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_name(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Guardian National ID -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_national_id.label(class="form-label") }}
+                                {% if form.guardian_national_id.errors %}
+                                    {{ form.guardian_national_id(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_national_id.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_national_id(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Guardian Phone -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_phone.label(class="form-label") }}
+                                {% if form.guardian_phone.errors %}
+                                    {{ form.guardian_phone(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_phone.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_phone(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Guardian Email -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_email.label(class="form-label") }}
+                                {% if form.guardian_email.errors %}
+                                    {{ form.guardian_email(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_email(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Address -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-group">
+                                {{ form.address.label(class="form-label") }}
+                                {% if form.address.errors %}
+                                    {{ form.address(class="form-control is-invalid", rows=3) }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.address.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.address(class="form-control", rows=3) }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    <h5 class="section-title"><i class="fas fa-file-upload me-2"></i>المستندات المطلوبة</h5>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>يمكنك إرفاق المستندات المطلوبة هنا. الصيغ المقبولة: JPG, PNG, PDF</small>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Student Photo -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.student_photo.label(class="form-label") }}
+                                {% if form.student_photo.errors %}
+                                    {{ form.student_photo(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.student_photo.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.student_photo(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Guardian ID Front -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_id_front.label(class="form-label") }}
+                                {% if form.guardian_id_front.errors %}
+                                    {{ form.guardian_id_front(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_id_front.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_id_front(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Guardian ID Back -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.guardian_id_back.label(class="form-label") }}
+                                {% if form.guardian_id_back.errors %}
+                                    {{ form.guardian_id_back(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.guardian_id_back.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.guardian_id_back(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Commitment Document -->
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.commitment_doc.label(class="form-label") }}
+                                {% if form.commitment_doc.errors %}
+                                    {{ form.commitment_doc(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.commitment_doc.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.commitment_doc(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <div class="form-group">
+                                {{ form.notes.label(class="form-label") }}
+                                {% if form.notes.errors %}
+                                    {{ form.notes(class="form-control is-invalid", rows=3) }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.notes.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.notes(class="form-control", rows=3) }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="registration-footer">
+            <p>جمعية دعم التمدرس &copy; {{ now.year }} - جميع الحقوق محفوظة</p>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS from CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

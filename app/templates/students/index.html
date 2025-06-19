@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<style>
+    /* تحسين أسلوب مربعات الاختيار في Bootstrap 5 */
+    .form-check-input:checked {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    
+    /* إصلاح مشاكل الهوامش مع الأزرار */
+    .btn-sm {
+        margin: 0 2px;
+    }
+    
+    /* إصلاح أزرار الإجراءات الجماعية */
+    .bulk-actions .btn {
+        margin: 0 2px 5px 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.export_excel') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm me-1">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> تصدير للإكسل
+            </a>
+            <a href="{{ url_for('students.import_students') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm me-1">
+                <i class="fas fa-file-import fa-sm text-white-50"></i> استيراد من إكسل
+            </a>
+            <a href="{{ url_for('students.create_registration_link') }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm me-1">
+                <i class="fas fa-link fa-sm text-white-50"></i> إنشاء رابط تسجيل
+            </a>
+            <a href="{{ url_for('students.pending_registrations') }}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm me-1">
+                <i class="fas fa-clipboard-list fa-sm text-white-50"></i> طلبات التسجيل المعلقة
+            </a>
+            <a href="{{ url_for('students.blacklist') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm me-1">
+                <i class="fas fa-ban fa-sm text-white-50"></i> القائمة السوداء
+            </a>
+            <a href="{{ url_for('students.add') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> إضافة تلميذ جديد
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">بحث وتصفية</h6>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('students.index') }}" method="get" class="mb-3">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <label for="educational_level" class="form-label">المستوى الدراسي:</label>
+                        <select class="form-select" id="educational_level" name="educational_level">
+                            <option value="">-- الكل --</option>
+                            {% for level in educational_levels %}
+                                <option value="{{ level.name }}" {% if request.args.get('educational_level') == level.name %}selected{% endif %}>{{ level.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label for="institution" class="form-label">المؤسسة:</label>
+                        <select class="form-select" id="institution" name="institution">
+                            <option value="">-- الكل --</option>
+                            {% for inst in institutions %}
+                                <option value="{{ inst }}" {% if request.args.get('institution') == inst %}selected{% endif %}>{{ inst }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label for="fee_min" class="form-label">مبلغ الاشتراك:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="fee_min" name="fee_min" placeholder="من" value="{{ request.args.get('fee_min', '') }}">
+                            <input type="number" class="form-control" id="fee_max" name="fee_max" placeholder="إلى" value="{{ request.args.get('fee_max', '') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label for="status" class="form-label">الحالة:</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">-- الكل --</option>
+                            <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>نشط</option>
+                            <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>غير نشط</option>
+                            <option value="blacklisted" {% if request.args.get('status') == 'blacklisted' %}selected{% endif %}>القائمة السوداء</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">تصفية</button>
+                        <a href="{{ url_for('students.index') }}" class="btn btn-secondary">إعادة ضبط</a>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Text Search Form -->
+            <form action="{{ url_for('students.search') }}" method="get" class="d-flex flex-wrap align-items-center">
+                <div class="me-2 mb-2 flex-grow-1">
+                    <input type="text" class="form-control" name="query" placeholder="رقم التلميذ، الاسم الشخصي، النسب، رقم مسار، اسم ولي الأمر" 
+                           value="{{ search_query|default('') }}" required>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary mb-2 me-2">بحث</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('students.index') }}" class="btn btn-secondary mb-2">إلغاء البحث</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulk Action Buttons -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">الإجراءات الجماعية</h6>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-12 bulk-actions">
+                    <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" id="btnAddToBlacklist" class="btn btn-warning mb-1" disabled>
+                        <i class="fas fa-ban"></i> إضافة المحددين للقائمة السوداء (<span id="blacklistCount">0</span>)
+                    </button>
+                    <button type="button" id="btnDeleteSelected" class="btn btn-danger mb-1" disabled>
+                        <i class="fas fa-trash"></i> حذف المحددين (<span id="deleteCount">0</span>)
+                    </button>
+                    <button type="button" id="btnWhatsAppSelected" class="btn btn-success mb-1" disabled>
+                        <i class="fab fa-whatsapp"></i> إرسال رسالة واتساب للمحددين (<span id="whatsappCount">0</span>)
+                    </button>
+                    <button type="button" id="btnSelectAll" class="btn btn-primary mb-1">
+                        <i class="fas fa-check-square"></i> تحديد الكل
+                    </button>
+                    <button type="button" id="btnDeselectAll" class="btn btn-secondary mb-1">
+                        <i class="fas fa-square"></i> إلغاء تحديد الكل
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة التلاميذ</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                                </div>
+                            </th>
+                            <th>رقم التلميذ</th>
+                            <th>صورة</th>
+                            <th>الاسم الكامل</th>
+                            <th>رقم مسار</th>
+                            <th>المستوى الدراسي</th>
+                            <th>المؤسسة</th>
+                            <th>اسم ولي الأمر</th>
+                            <th>رقم هاتف ولي الأمر</th>
+                            <th>مبلغ الاشتراك</th>
+                            <th>الحالة</th>
+                            <th class="actions-column">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="text-center">
+                                <div class="form-check">
+                                    <input class="form-check-input studentCheckbox" type="checkbox" 
+                                        id="checkbox{{ student.id }}" 
+                                        data-id="{{ student.id }}" 
+                                        data-name="{{ student.full_name }}" 
+                                        data-phone="{{ student.guardian_phone }}">
+                                </div>
+                            </td>
+                            <td>{{ student.student_id }}</td>
+                            <td class="text-center">
+                                {% if student.student_photo %}
+                                <img src="{{ url_for('static', filename=student.student_photo) }}" alt="صورة التلميذ" class="img-profile rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='img/undraw_profile.svg') }}" alt="صورة التلميذ" class="img-profile rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                            </td>
+                            <td>{{ student.full_name }}</td>
+                            <td>{{ student.massar_number }}</td>
+                            <td>{{ student.educational_level }}</td>
+                            <td>{{ student.institution }}</td>
+                            <td>{{ student.guardian_name }}</td>
+                            <td>{{ student.guardian_phone }}</td>
+                            <td>{{ student.monthly_fee }}</td>
+                            <td>
+                                {% if student.status == 'active' %}
+                                <span class="badge bg-success">نشط</span>
+                                {% else %}
+                                <span class="badge bg-secondary">غير نشط</span>
+                                {% endif %}
+                                
+                                {% if student.is_blacklisted %}
+                                <span class="badge bg-dark">القائمة السوداء</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-column">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('students.view', id=student.id) }}" class="btn btn-info btn-sm" title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('students.edit', id=student.id) }}" class="btn btn-primary btn-sm" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('students.add_student_transport_subscription', student_id=student.id) }}" class="btn btn-success btn-sm" title="اشتراك النقل">
+                                        <i class="fas fa-bus"></i>
+                                    </a>
+                                    {% if student.guardian_phone %}
+                                    <a href="https://wa.me/{{ student.guardian_phone|replace('+', '')|replace(' ', '') }}" target="_blank" class="btn btn-success btn-sm" title="إرسال رسالة واتساب">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-success btn-sm" title="لا يوجد رقم" disabled><i class="fab fa-whatsapp"></i></button>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#blacklistModal{{ student.id }}" title="إضافة إلى القائمة السوداء">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ student.id }}" title="حذف التلميذ">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Blacklist Modal -->
+<div class="modal fade" id="bulkBlacklistModal" tabindex="-1" aria-labelledby="bulkBlacklistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkBlacklistModalLabel">إضافة التلاميذ المحددين إلى القائمة السوداء</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkBlacklistForm" action="{{ url_for('students.bulk_add_to_blacklist') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bulk_blacklist_reason" class="form-label">سبب الإضافة إلى القائمة السوداء:</label>
+                        <textarea class="form-control" id="bulk_blacklist_reason" name="blacklist_reason" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bulk_blacklist_duration" class="form-label">مدة العقوبة (بالأيام):</label>
+                        <input type="number" class="form-control" id="bulk_blacklist_duration" name="blacklist_duration" min="1" value="7" required>
+                    </div>
+                    <div id="selectedStudentsForBlacklist" class="mt-3">
+                        <p>التلاميذ المحددين:</p>
+                        <ul id="blacklistStudentsList"></ul>
+                    </div>
+                    <input type="hidden" id="blacklistStudentIds" name="student_ids">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">إضافة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkDeleteModalLabel">حذف التلاميذ المحددين</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkDeleteForm" action="{{ url_for('students.bulk_delete') }}" method="post">
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف التلاميذ المحددين؟</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بيانات التلاميذ.
+                    </div>
+                    <div id="selectedStudentsForDelete" class="mt-3">
+                        <p>التلاميذ المحددين:</p>
+                        <ul id="deleteStudentsList"></ul>
+                    </div>
+                    <input type="hidden" id="deleteStudentIds" name="student_ids">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- WhatsApp Modal -->
+<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="whatsappModalLabel">إرسال رسالة واتساب للتلاميذ المحددين</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="whatsapp_message" class="form-label">نص الرسالة:</label>
+                    <textarea class="form-control" id="whatsapp_message" rows="5" required placeholder="اكتب الرسالة هنا... يمكنك استخدام [اسم_التلميذ] كمتغير سيتم استبداله باسم التلميذ"></textarea>
+                    <small class="form-text text-muted">يمكنك استخدام [اسم_التلميذ] كمتغير في الرسالة.</small>
+                </div>
+                <div id="selectedStudentsForWhatsApp" class="mt-3">
+                    <p>التلاميذ المحددين:</p>
+                    <div class="alert alert-info">سيتم فتح رسالة واتساب لكل تلميذ في نافذة جديدة</div>
+                    <ul id="whatsappStudentsList"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" id="btnSendWhatsApp" class="btn btn-success">إرسال</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<!-- Custom JS for students page -->
+<script src="{{ url_for('static', filename='js/students.js') }}"></script>
+{% endblock %}
+
+{% block scripts %}
+<!-- تم نقل كود JavaScript إلى الملف الخارجي students.js -->
+{% endblock %} 

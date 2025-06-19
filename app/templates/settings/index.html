@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}إعدادات الجمعية{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">إعدادات الجمعية</h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('settings.update') }}" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.association_name.label(class="form-label") }}
+                                    {{ form.association_name(class="form-control") }}
+                                    {% if form.association_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.association_name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.logo.label(class="form-label") }}
+                                    {{ form.logo(class="form-control") }}
+                                    {% if form.logo.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.logo.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if setting and setting.logo_path %}
+                                        <div class="mt-2">
+                                            <img src="{{ url_for('static', filename='uploads/' + setting.logo_path) }}" 
+                                                 alt="شعار الجمعية" class="img-thumbnail" style="max-height: 100px;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows=4) }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.address.label(class="form-label") }}
+                                    {{ form.address(class="form-control") }}
+                                    {% if form.address.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.address.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.phone.label(class="form-label") }}
+                                    {{ form.phone(class="form-control") }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control") }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.website.label(class="form-label") }}
+                                    {{ form.website(class="form-control") }}
+                                    {% if form.website.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.website.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

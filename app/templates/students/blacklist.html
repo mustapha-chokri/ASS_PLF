@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .badge-blacklist {
+        background-color: #343a40;
+        color: #fff;
+    }
+    .blacklist-days-left {
+        font-weight: bold;
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('students.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة التلاميذ
+            </a>
+        </div>
+    </div>
+
+    <!-- Blacklist Statistics Cards -->
+    <div class="row">
+        <!-- Total Blacklisted Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                إجمالي التلاميذ في القائمة السوداء
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ students|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-ban fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blacklist Students Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">القائمة السوداء</h6>
+        </div>
+        <div class="card-body">
+            {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>رقم التلميذ</th>
+                                <th>صورة</th>
+                                <th>الاسم الكامل</th>
+                                <th>المستوى الدراسي</th>
+                                <th>سبب العقوبة</th>
+                                <th>تاريخ بداية العقوبة</th>
+                                <th>تاريخ نهاية العقوبة</th>
+                                <th>المدة المتبقية</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                                <tr>
+                                    <td>{{ student.student_id }}</td>
+                                    <td class="text-center">
+                                        {% if student.student_photo %}
+                                        <img src="{{ url_for('static', filename=student.student_photo) }}" alt="صورة التلميذ" class="img-profile rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                        <img src="{{ url_for('static', filename='img/undraw_profile.svg') }}" alt="صورة التلميذ" class="img-profile rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.educational_level }}</td>
+                                    <td>{{ student.blacklist_reason }}</td>
+                                    <td>{{ student.blacklist_start_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ student.blacklist_end_date.strftime('%Y-%m-%d') }}</td>
+                                    <td class="blacklist-days-left">
+                                        {% set days_left = (student.blacklist_end_date - now.date()).days %}
+                                        {{ days_left }} يوم
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('students.view', id=student.id) }}" class="btn btn-info btn-sm" title="عرض التفاصيل">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            
+                                            {% if student.guardian_phone %}
+                                            <a href="https://wa.me/{{ student.guardian_phone|replace('+', '')|replace(' ', '') }}" target="_blank" class="btn btn-success btn-sm" title="إرسال رسالة واتساب">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#removeModal{{ student.id }}" title="إزالة من القائمة السوداء">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Remove from Blacklist Modal -->
+                                        <div class="modal fade" id="removeModal{{ student.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">إزالة من القائمة السوداء</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <form action="{{ url_for('students.remove_from_blacklist', id=student.id) }}" method="post">
+                                                        <div class="modal-body">
+                                                            <p>هل أنت متأكد من إزالة <strong>{{ student.full_name }}</strong> من القائمة السوداء؟</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                            <button type="submit" class="btn btn-warning">إزالة</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">لا يوجد تلاميذ في القائمة السوداء حالياً</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Arabic.json"
+            },
+            "order": [[7, "asc"]]
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">إضافة حساب مالي جديد</h1>
+        <a href="{{ url_for('finance.treasury') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة للخزينة
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">بيانات الحساب</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('finance.add_account') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="form-group mb-3">
+                            <label for="account_type" class="form-label">نوع الحساب</label>
+                            <select class="form-select" id="account_type" name="account_type" required>
+                                <option value="">اختر نوع الحساب</option>
+                                <option value="cash_box">صندوق نقدي</option>
+                                <option value="bank_account">حساب بنكي</option>
+                            </select>
+                        </div>
+
+                        <div id="cash_box_fields" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="name" class="form-label">اسم الصندوق</label>
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+                        </div>
+
+                        <div id="bank_account_fields" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="bank_name" class="form-label">اسم البنك</label>
+                                <input type="text" class="form-control" id="bank_name" name="bank_name">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="account_number" class="form-label">رقم الحساب</label>
+                                <input type="text" class="form-control" id="account_number" name="account_number">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="initial_balance" class="form-label">الرصيد الافتتاحي</label>
+                            <input type="number" step="0.01" class="form-control" id="initial_balance" name="initial_balance" value="0" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.getElementById('account_type').addEventListener('change', function() {
+    const cashBoxFields = document.getElementById('cash_box_fields');
+    const bankAccountFields = document.getElementById('bank_account_fields');
+    
+    if (this.value === 'cash_box') {
+        cashBoxFields.style.display = 'block';
+        bankAccountFields.style.display = 'none';
+        document.getElementById('name').required = true;
+        document.getElementById('bank_name').required = false;
+        document.getElementById('account_number').required = false;
+    } else if (this.value === 'bank_account') {
+        cashBoxFields.style.display = 'none';
+        bankAccountFields.style.display = 'block';
+        document.getElementById('name').required = false;
+        document.getElementById('bank_name').required = true;
+        document.getElementById('account_number').required = true;
+    } else {
+        cashBoxFields.style.display = 'none';
+        bankAccountFields.style.display = 'none';
+        document.getElementById('name').required = false;
+        document.getElementById('bank_name').required = false;
+        document.getElementById('account_number').required = false;
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

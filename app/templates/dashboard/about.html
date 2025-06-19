@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    {% if about.logo %}
+                        <img src="/{{ about.logo }}" alt="شعار الجمعية" style="height: 50px; margin-left: 15px;">
+                    {% endif %}
+                    <h3 class="mb-0">{{ about.title or 'عن الجمعية' }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.title.label(class="form-label") }}
+                                {{ form.title(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.logo.label(class="form-label") }}
+                                {{ form.logo(class="form-control") }}
+                                {% if about.logo %}
+                                    <img src="/{{ about.logo }}" alt="شعار الجمعية" class="img-thumbnail mt-2" style="max-height: 80px;">
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control", rows=3) }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.goals.label(class="form-label") }}
+                                {{ form.goals(class="form-control", rows=2) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.principles.label(class="form-label") }}
+                                {{ form.principles(class="form-control", rows=2) }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.bylaws_text.label(class="form-label") }}
+                            {{ form.bylaws_text(class="form-control", rows=2) }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.bylaws_file.label(class="form-label") }}
+                                {{ form.bylaws_file(class="form-control") }}
+                                {% if about.bylaws_file %}
+                                    <a href="/{{ about.bylaws_file }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-2">معاينة/تحميل القانون الأساسي</a>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.legal_doc.label(class="form-label") }}
+                                {{ form.legal_doc(class="form-control") }}
+                                {% if about.legal_doc %}
+                                    <a href="/{{ about.legal_doc }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-2">معاينة/تحميل الوصل القانوني</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.hq_image.label(class="form-label") }}
+                            {{ form.hq_image(class="form-control") }}
+                            {% if about.hq_image %}
+                                <img src="/{{ about.hq_image }}" alt="مقر الجمعية" class="img-thumbnail mt-2" style="max-height: 120px;">
+                            {% endif %}
+                        </div>
+                        {% if current_user.is_admin %}
+                        <div class="text-end">
+                            {{ form.submit(class="btn btn-success px-5") }}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 20px;
+        margin-bottom: 20px;
+        border-left: 2px solid #28a745;
+    }
+    
+    .timeline-date {
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .timeline-content {
+        padding: 5px 0;
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">بطاقة المنخرط</h1>
+        <div>
+            <a href="{{ url_for('members.edit', id=member.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{{ url_for('members.add_member_subscription', member_id=member.id) }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> إضافة اشتراك
+            </a>
+            <a href="{{ url_for('members.print_card', id=member.id) }}" class="btn btn-secondary btn-sm" target="_blank">
+                <i class="fas fa-id-card"></i> طباعة البطاقة
+            </a>
+            <a href="{{ url_for('members.index') }}" class="btn btn-info btn-sm">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    {% if member.photo_path %}
+                    <img src="{{ url_for('static', filename=member.photo_path) }}" alt="{{ member.full_name }}" class="img-profile rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/undraw_profile.svg') }}" alt="{{ member.full_name }}" class="img-profile rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <h4>{{ member.full_name }}</h4>
+                    <p class="text-muted">رقم الانخراط: {{ member.registration_number }}</p>
+                    {% if member.status == 'active' %}
+                    <div class="badge badge-success p-2">نشط</div>
+                    {% elif member.status == 'inactive' %}
+                    <div class="badge badge-warning p-2">غير نشط</div>
+                    {% else %}
+                    <div class="badge badge-danger p-2">معلق</div>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <form action="{{ url_for('members.delete', id=member.id) }}" method="post" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنخرط؟');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">البيانات الشخصية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">الاسم:</label>
+                                <p>{{ member.first_name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">النسب:</label>
+                                <p>{{ member.last_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">رقم البطاقة الوطنية:</label>
+                                <p>{{ member.national_id }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">تاريخ الميلاد:</label>
+                                <p>{{ member.birth_date.strftime('%d-%m-%Y') if member.birth_date else 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">العنوان:</label>
+                                <p>{{ member.address or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">المدينة:</label>
+                                <p>{{ member.city or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">الهاتف:</label>
+                                <p>{{ member.phone or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">البريد الإلكتروني:</label>
+                                <p>{{ member.email or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">المهنة:</label>
+                                <p>{{ member.profession or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">تاريخ الانخراط:</label>
+                                <p>{{ member.join_date.strftime('%d-%m-%Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">ملاحظات:</label>
+                        <p>{{ member.notes or 'لا توجد ملاحظات' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">سجل الاشتراكات</h6>
+            <a href="{{ url_for('members.add_member_subscription', member_id=member.id) }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> إضافة اشتراك جديد
+            </a>
+        </div>
+        <div class="card-body">
+            {% if subscriptions %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>السنة</th>
+                            <th>المبلغ</th>
+                            <th>طريقة الدفع</th>
+                            <th>تاريخ الدفع</th>
+                            <th>رقم الإيصال</th>
+                            <th>ملاحظات</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subscription in subscriptions %}
+                        <tr>
+                            <td>{{ subscription.year }}</td>
+                            <td>{{ subscription.amount }} دم</td>
+                            <td>
+                                {% if subscription.payment_method == 'cash' %}
+                                <span class="badge badge-primary">نقداً</span>
+                                {% elif subscription.payment_method == 'bank_transfer' %}
+                                <span class="badge badge-info">تحويل بنكي</span>
+                                {% elif subscription.payment_method == 'check' %}
+                                <span class="badge badge-success">شيك</span>
+                                {% else %}
+                                <span class="badge badge-secondary">طريقة أخرى</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ subscription.payment_date.strftime('%d-%m-%Y') }}</td>
+                            <td>{{ subscription.receipt_number or '-' }}</td>
+                            <td>{{ subscription.notes or '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('members.edit_subscription', id=subscription.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('members.print_receipt', id=subscription.id) }}" class="btn btn-secondary btn-sm" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                {% if current_user.is_admin %}
+                                <a href="{{ url_for('members.delete_subscription', id=subscription.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا الاشتراك؟');">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">لا توجد اشتراكات مسجلة لهذا المنخرط.</p>
+                <a href="{{ url_for('members.add_member_subscription', member_id=member.id) }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> إضافة اشتراك جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

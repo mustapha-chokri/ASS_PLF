@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - جمعية دعم التمدرس</title>
+    
+    <!-- Custom fonts for this template-->
+    <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Cairo:400,700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.rtl.min.css') }}" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Cairo', sans-serif;
+        }
+        .success-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-height: 120px;
+            margin-bottom: 10px;
+        }
+        .success-card {
+            border-color: #1cc88a;
+            padding: 20px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #1cc88a;
+            margin-bottom: 20px;
+        }
+        .registration-footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .steps-list {
+            text-align: right;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <!-- Logo and Header -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="شعار الجمعية" class="logo">
+            <h2>جمعية دعم التمدرس</h2>
+        </div>
+        
+        <!-- Success Message -->
+        <div class="card shadow success-card mb-4">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-success mb-4">تم إرسال طلب التسجيل بنجاح!</h3>
+            
+            <div class="alert alert-success">
+                لقد تم استلام طلبكم وسيتم مراجعته من قبل الإدارة في أقرب وقت ممكن.
+            </div>
+            
+            <div class="card-body">
+                <h5 class="mb-3">الخطوات القادمة:</h5>
+                <div class="steps-list">
+                    <ol>
+                        <li>ستقوم إدارة الجمعية بمراجعة الطلب والبيانات المقدمة.</li>
+                        <li>سيتم التواصل معكم على رقم الهاتف المقدم للإخبار بنتيجة الطلب.</li>
+                        <li>في حال الموافقة على الطلب، ستتلقون تفاصيل الخطوات القادمة والإجراءات المطلوبة.</li>
+                        <li>في حال وجود أي نقص في البيانات، قد نطلب منكم توفير معلومات إضافية.</li>
+                    </ol>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <i class="fas fa-info-circle"></i>
+                    يرجى الاحتفاظ برقم الطلب (إن وجد) للرجوع إليه عند التواصل مع الجمعية.
+                </div>
+                
+                <hr>
+                
+                <div class="mt-4">
+                    <h6>للتواصل والاستفسار:</h6>
+                    <p><i class="fas fa-phone"></i> <span dir="ltr">+212 XXXXXXXXX</span></p>
+                    <p><i class="fas fa-envelope"></i> info@example.com</p>
+                </div>
+                
+                <a href="javascript:window.print();" class="btn btn-outline-primary mt-3">
+                    <i class="fas fa-print"></i> طباعة الصفحة
+                </a>
+            </div>
+        </div>
+        
+        <div class="registration-footer">
+            <p>جمعية دعم التمدرس &copy; {{ now.year }} - جميع الحقوق محفوظة</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html> 

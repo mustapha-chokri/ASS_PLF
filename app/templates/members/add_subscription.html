@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">إضافة اشتراك جديد</h1>
+        {% if member %}
+        <a href="{{ url_for('members.view', id=member.id) }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-right"></i> العودة إلى بيانات المنخرط
+        </a>
+        {% else %}
+        <a href="{{ url_for('members.subscriptions') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-right"></i> العودة إلى سجل الاشتراكات
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if member %}
+                تسجيل اشتراك للمنخرط: {{ member.full_name }}
+                {% else %}
+                تسجيل اشتراك جديد
+                {% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {{ form.csrf_token }}
+                
+                {% if not member %}
+                <div class="form-group">
+                    {{ form.member_id.label(class="form-control-label") }}
+                    {{ form.member_id(class="form-control selectpicker", data_live_search="true") }}
+                    {% if form.member_id.errors %}
+                    <div class="text-danger">
+                        {% for error in form.member_id.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.year.label(class="form-control-label") }}
+                            {{ form.year(class="form-control") }}
+                            {% if form.year.errors %}
+                            <div class="text-danger">
+                                {% for error in form.year.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.amount.label(class="form-control-label") }}
+                            <div class="input-group">
+                                {{ form.amount(class="form-control") }}
+                                <div class="input-group-append">
+                                    <span class="input-group-text">دم</span>
+                                </div>
+                            </div>
+                            {% if form.amount.errors %}
+                            <div class="text-danger">
+                                {% for error in form.amount.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.payment_date.label(class="form-control-label") }}
+                            {{ form.payment_date(class="form-control", type="date") }}
+                            {% if form.payment_date.errors %}
+                            <div class="text-danger">
+                                {% for error in form.payment_date.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.payment_method.label(class="form-control-label") }}
+                            {{ form.payment_method(class="form-control") }}
+                            {% if form.payment_method.errors %}
+                            <div class="text-danger">
+                                {% for error in form.payment_method.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.receipt_number.label(class="form-control-label") }}
+                    {{ form.receipt_number(class="form-control") }}
+                    {% if form.receipt_number.errors %}
+                    <div class="text-danger">
+                        {% for error in form.receipt_number.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.notes.label(class="form-control-label") }}
+                    {{ form.notes(class="form-control", rows=3) }}
+                    {% if form.notes.errors %}
+                    <div class="text-danger">
+                        {% for error in form.notes.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group text-center mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> تسجيل الاشتراك
+                    </button>
+                    {% if member %}
+                    <a href="{{ url_for('members.view', id=member.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('members.subscriptions') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize selectpicker for enhanced dropdown with search
+        $('.selectpicker').selectpicker();
+    });
+</script>
+{% endblock %} 

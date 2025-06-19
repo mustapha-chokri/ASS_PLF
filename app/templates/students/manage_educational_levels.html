@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{{ url_for('students.educational_levels') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-right fa-sm text-white-50"></i> العودة إلى قائمة المستويات الدراسية
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Add New Level Form -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">إدارة المستويات الدراسية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <p class="text-muted">
+                            يمكنك من هنا إدارة المستويات الدراسية المتاحة للاختيار عند تسجيل التلاميذ.
+                            يتم ترتيب المستويات حسب الرقم الترتيبي المحدد لكل مستوى.
+                        </p>
+                    </div>
+                    
+                    <form method="post" action="{{ url_for('students.add_educational_level') }}">
+                        {{ form.csrf_token }}
+                        
+                        <div class="form-group">
+                            <label for="name">اسم المستوى *</label>
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.name.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="order">الرقم الترتيبي *</label>
+                            {{ form.order(class="form-control") }}
+                            {% if form.order.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.order.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">يتم ترتيب المستويات تصاعدياً حسب هذا الرقم</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">الوصف</label>
+                            {{ form.description(class="form-control", rows=3) }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> إضافة مستوى جديد
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Example Levels -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">أمثلة للمستويات الدراسية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>الرقم الترتيبي</th>
+                                    <th>اسم المستوى</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10</td>
+                                    <td>الروض</td>
+                                </tr>
+                                <tr>
+                                    <td>20</td>
+                                    <td>المستوى الأول ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>30</td>
+                                    <td>المستوى الثاني ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>40</td>
+                                    <td>المستوى الثالث ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>50</td>
+                                    <td>المستوى الرابع ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>60</td>
+                                    <td>المستوى الخامس ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>70</td>
+                                    <td>المستوى السادس ابتدائي</td>
+                                </tr>
+                                <tr>
+                                    <td>80</td>
+                                    <td>الأولى إعدادي</td>
+                                </tr>
+                                <tr>
+                                    <td>90</td>
+                                    <td>الثانية إعدادي</td>
+                                </tr>
+                                <tr>
+                                    <td>100</td>
+                                    <td>الثالثة إعدادي</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-muted small mt-3">
+                        <p>نقترح استخدام مضاعفات الـ 10 للرقم الترتيبي لإتاحة المجال لإضافة مستويات جديدة بين المستويات الحالية إذا لزم الأمر.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Levels -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">المستويات الدراسية الحالية</h6>
+        </div>
+        <div class="card-body">
+            {% if levels %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="levelsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>الرقم الترتيبي</th>
+                            <th>اسم المستوى</th>
+                            <th>الوصف</th>
+                            <th>عدد التلاميذ</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for level in levels %}
+                        <tr>
+                            <td>{{ level.order }}</td>
+                            <td>{{ level.name }}</td>
+                            <td>{{ level.description or '—' }}</td>
+                            <td>{{ level.students_count }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-primary btn-sm edit-level" 
+                                            data-id="{{ level.id }}"
+                                            data-name="{{ level.name }}"
+                                            data-order="{{ level.order }}"
+                                            data-description="{{ level.description or '' }}"
+                                            data-toggle="modal" data-target="#editLevelModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="{{ url_for('students.delete_educational_level', id=level.id) }}" method="post" class="d-inline" 
+                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا المستوى الدراسي؟ إذا كان هناك تلاميذ مسجلين في هذا المستوى، لن يمكن حذفه.')">
+                                        <button type="submit" class="btn btn-danger btn-sm" {{ 'disabled' if level.students_count > 0 }}>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                لا توجد مستويات دراسية مضافة حالياً. يمكنك إضافة المستويات باستخدام النموذج في الأعلى.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Level Modal -->
+<div class="modal fade" id="editLevelModal" tabindex="-1" role="dialog" aria-labelledby="editLevelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLevelModalLabel">تعديل المستوى الدراسي</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editLevelForm" method="post" action="{{ url_for('students.edit_educational_level', id=0) }}">
+                <div class="modal-body">
+                    {{ edit_form.csrf_token }}
+                    <div class="form-group">
+                        <label for="name">اسم المستوى *</label>
+                        {{ edit_form.name(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="order">الرقم الترتيبي *</label>
+                        {{ edit_form.order(class="form-control") }}
+                        <small class="text-muted">يتم ترتيب المستويات تصاعدياً حسب هذا الرقم</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">الوصف</label>
+                        {{ edit_form.description(class="form-control", rows=3) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#levelsTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Arabic.json"
+            },
+            "order": [[0, "asc"]]
+        });
+        
+        $('.edit-level').on('click', function() {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var order = $(this).data('order');
+            var description = $(this).data('description');
+            
+            // Update form action URL with the level ID
+            var formAction = "{{ url_for('students.edit_educational_level', id=0) }}".replace('0', id);
+            $('#editLevelForm').attr('action', formAction);
+            
+            // Set form values
+            $('#editLevelForm #name').val(name);
+            $('#editLevelForm #order').val(order);
+            $('#editLevelForm #description').val(description);
+        });
+    });
+</script>
+{% endblock %} 
